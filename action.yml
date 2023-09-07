@@ -1,0 +1,35 @@
+name: IssueOps Labeler
+description: Manage labels for issues and pull requests
+author: Nick Alteen
+
+branding:
+  icon: check-square
+  color: blue
+
+inputs:
+  action:
+    description: The action to take
+    required: false
+    default: add
+  create:
+    description: Create the label(s) if not present
+    required: false
+    default: 'false'
+  github_token:
+    description: The GitHub API token to use
+    required: false
+    default: ${{ github.token }}
+  labels:
+    description: A line-separated list of labels to add or remove
+    required: true
+  issue_number:
+    description: The issue or PR number
+    required: true
+  repository:
+    description: The repository to use
+    required: false
+    default: ${{ github.repository }}
+
+runs:
+  using: node16
+  main: dist/index.js
