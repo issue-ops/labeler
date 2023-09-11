@@ -34,10 +34,10 @@ jobs:
         uses: ncalteen/issueops-labeler@vX.X.X
         with:
           action: add
+          issue_number: 1
           labels: |
             enhancement
             great-first-issue
-          issue: 1
 
       # Remove labels from an issue in this repository
       - name: Remove Labels
@@ -45,10 +45,10 @@ jobs:
         uses: ncalteen/issueops-labeler@vX.X.X
         with:
           action: remove
+          issue_number: 1
           labels: |
             enhancement
             great-first-issue
-          issue: 1
 ```
 
 ## Behavior

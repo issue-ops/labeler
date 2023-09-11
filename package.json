@@ -1,7 +1,7 @@
 {
   "name": "issueops-labeler",
   "description": "Manage labels for issues and pull requests",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "Nick Alteen <ncalteen@github.com>",
   "homepage": "https://github.com/ncalteen/issueops-labeler#readme",
   "repository": {
@@ -17,7 +17,7 @@
     "issueops"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "scripts": {
     "bundle": "npm run format:write && npm run package",
