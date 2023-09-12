@@ -1,9 +1,9 @@
 # IssueOps Labeler
 
-[![Check dist/](https://github.com/ncalteen/issueops-labeler/actions/workflows/check-dist.yml/badge.svg)](https://github.com/ncalteen/issueops-labeler/actions/workflows/check-dist.yml)
-[![CodeQL](https://github.com/ncalteen/issueops-labeler/actions/workflows/codeql.yml/badge.svg)](https://github.com/ncalteen/issueops-labeler/actions/workflows/codeql.yml)
-[![Continuous Integration](https://github.com/ncalteen/issueops-labeler/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/ncalteen/issueops-labeler/actions/workflows/continuous-integration.yml)
-[![Super Linter](https://github.com/ncalteen/issueops-labeler/actions/workflows/super-linter.yml/badge.svg)](https://github.com/ncalteen/issueops-labeler/actions/workflows/super-linter.yml)
+[![Check dist/](https://github.com/issue-ops/labeler/actions/workflows/check-dist.yml/badge.svg)](https://github.com/issue-ops/labeler/actions/workflows/check-dist.yml)
+[![CodeQL](https://github.com/issue-ops/labeler/actions/workflows/codeql.yml/badge.svg)](https://github.com/issue-ops/labeler/actions/workflows/codeql.yml)
+[![Continuous Integration](https://github.com/issue-ops/labeler/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/issue-ops/labeler/actions/workflows/continuous-integration.yml)
+[![Super Linter](https://github.com/issue-ops/labeler/actions/workflows/super-linter.yml/badge.svg)](https://github.com/issue-ops/labeler/actions/workflows/super-linter.yml)
 [![Code Coverage](./badges/coverage.svg)](./badges/coverage.svg)
 
 Manage labels for issues and pull requests
@@ -31,7 +31,7 @@ jobs:
       # Add labels to an issue in this repository
       - name: Add Labels
         id: add-labels
-        uses: ncalteen/issueops-labeler@vX.X.X
+        uses: issue-ops/labeler@vX.X.X
         with:
           action: add
           issue_number: 1
@@ -42,7 +42,7 @@ jobs:
       # Remove labels from an issue in this repository
       - name: Remove Labels
         id: remove-labels
-        uses: ncalteen/issueops-labeler@vX.X.X
+        uses: issue-ops/labeler@vX.X.X
         with:
           action: remove
           issue_number: 1

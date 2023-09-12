@@ -59,7 +59,7 @@ describe('Add Labels', () => {
     })
     expect(core.getInput).toHaveReturnedWith('1')
     expect(core.getInput).toHaveBeenCalledWith('repository', { required: true })
-    expect(core.getInput).toHaveReturnedWith('ncalteen/issueops-labeler')
+    expect(core.getInput).toHaveReturnedWith('issue-ops/labeler')
   })
 
   it('Fails on GitHub API error', async () => {
@@ -124,22 +124,22 @@ describe('Add Labels', () => {
     expect(mocktokit.rest.issues.createLabel).toHaveBeenCalledWith({
       color: '7fffff',
       name: 'bug',
-      owner: 'ncalteen',
-      repo: 'issueops-labeler'
+      owner: 'issue-ops',
+      repo: 'labeler'
     })
     expect(core.info).toHaveBeenCalledWith('Created label: bug')
     expect(mocktokit.rest.issues.createLabel).toHaveBeenCalledWith({
       color: '7fffff',
       name: 'enhancement',
-      owner: 'ncalteen',
-      repo: 'issueops-labeler'
+      owner: 'issue-ops',
+      repo: 'labeler'
     })
     expect(core.info).toHaveBeenCalledWith('Created label: enhancement')
     expect(mocktokit.rest.issues.addLabels).toHaveBeenCalledWith({
       issue_number: 1,
       labels: ['bug', 'enhancement'],
-      owner: 'ncalteen',
-      repo: 'issueops-labeler'
+      owner: 'issue-ops',
+      repo: 'labeler'
     })
     expect(core.info).toHaveBeenCalledWith(
       'Added labels to #1: bug, enhancement'
@@ -174,14 +174,14 @@ describe('Remove Labels', () => {
     expect(mocktokit.rest.issues.removeLabel).toHaveBeenCalledWith({
       issue_number: 1,
       name: 'bug',
-      owner: 'ncalteen',
-      repo: 'issueops-labeler'
+      owner: 'issue-ops',
+      repo: 'labeler'
     })
     expect(mocktokit.rest.issues.removeLabel).toHaveBeenCalledWith({
       issue_number: 1,
       name: 'enhancement',
-      owner: 'ncalteen',
-      repo: 'issueops-labeler'
+      owner: 'issue-ops',
+      repo: 'labeler'
     })
     expect(core.info).toHaveBeenCalledWith(
       'Removed labels from #1: bug, enhancement'
