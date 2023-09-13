@@ -20,7 +20,7 @@ export function addLabelValidInput(
     case 'issue_number':
       return '1'
     case 'repository':
-      return 'ncalteen/issueops-labeler'
+      return 'issue-ops/labeler'
     default:
       return ''
   }
@@ -46,7 +46,7 @@ export function addLabelInvalidInput(
     case 'issue_number':
       return 'MyAwesomeIssue'
     case 'repository':
-      return 'ncalteen/invalid-repo'
+      return 'issue-ops/invalid-repo'
     default:
       return ''
   }
@@ -72,7 +72,7 @@ export function removeLabelValidInput(
     case 'issue_number':
       return '1'
     case 'repository':
-      return 'ncalteen/issueops-labeler'
+      return 'issue-ops/labeler'
     default:
       return ''
   }
