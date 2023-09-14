@@ -1,7 +1,7 @@
 {
   "name": "labeler",
   "description": "Manage labels for issues and pull requests",
-  "version": "1.1.0",
+  "version": "0.1.0",
   "author": "Nick Alteen <ncalteen@github.com>",
   "homepage": "https://github.com/issue-ops/labeler#readme",
   "repository": {
