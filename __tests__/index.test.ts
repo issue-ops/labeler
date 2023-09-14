@@ -22,8 +22,9 @@ describe('Invalid Usage', () => {
   })
 
   it('Fails on invalid action input', async () => {
+    jest.spyOn(core, 'error').mockImplementation()
     jest.spyOn(core, 'getInput').mockImplementation(addLabelInvalidInput)
-    jest.spyOn(core, 'setFailed')
+    jest.spyOn(core, 'setFailed').mockImplementation()
 
     const { run } = require('../src/index')
     await run()
@@ -64,8 +65,8 @@ describe('Add Labels', () => {
 
   it('Fails on GitHub API error', async () => {
     jest.spyOn(core, 'getInput').mockImplementation(addLabelValidInput)
-    jest.spyOn(core, 'error')
-    jest.spyOn(core, 'setFailed')
+    jest.spyOn(core, 'error').mockImplementation()
+    jest.spyOn(core, 'setFailed').mockImplementation()
 
     jest.spyOn(require('@octokit/rest'), 'Octokit').mockImplementation(() => {
       return {
@@ -95,7 +96,7 @@ describe('Add Labels', () => {
 
   it('Creates missing labels on 404 errors', async () => {
     jest.spyOn(core, 'getInput').mockImplementation(addLabelValidInput)
-    jest.spyOn(core, 'info')
+    jest.spyOn(core, 'info').mockImplementation()
     jest.spyOn(Math, 'random').mockReturnValue(0.5)
 
     const mocktokit = {
@@ -154,7 +155,7 @@ describe('Remove Labels', () => {
 
   it('Removes valid labels', async () => {
     jest.spyOn(core, 'getInput').mockImplementation(removeLabelValidInput)
-    jest.spyOn(core, 'info')
+    jest.spyOn(core, 'info').mockImplementation()
 
     const mocktokit = {
       rest: {
@@ -190,7 +191,7 @@ describe('Remove Labels', () => {
 
   it('Skips removing missing labels', async () => {
     jest.spyOn(core, 'getInput').mockImplementation(removeLabelValidInput)
-    jest.spyOn(core, 'setFailed')
+    jest.spyOn(core, 'setFailed').mockImplementation()
 
     const mocktokit = {
       rest: {
@@ -221,7 +222,7 @@ describe('Remove Labels', () => {
 
   it('Fails on GitHub API error', async () => {
     jest.spyOn(core, 'getInput').mockImplementation(removeLabelValidInput)
-    jest.spyOn(core, 'setFailed')
+    jest.spyOn(core, 'setFailed').mockImplementation()
 
     const mocktokit = {
       rest: {
