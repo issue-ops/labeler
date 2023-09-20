@@ -3,6 +3,7 @@
 [![Check dist/](https://github.com/issue-ops/labeler/actions/workflows/check-dist.yml/badge.svg)](https://github.com/issue-ops/labeler/actions/workflows/check-dist.yml)
 [![CodeQL](https://github.com/issue-ops/labeler/actions/workflows/codeql.yml/badge.svg)](https://github.com/issue-ops/labeler/actions/workflows/codeql.yml)
 [![Continuous Integration](https://github.com/issue-ops/labeler/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/issue-ops/labeler/actions/workflows/continuous-integration.yml)
+[![Continuous Deployment](https://github.com/issue-ops/labeler/actions/workflows/continuous-deployment.yml/badge.svg)](https://github.com/issue-ops/labeler/actions/workflows/continuous-deployment.yml)
 [![Super Linter](https://github.com/issue-ops/labeler/actions/workflows/super-linter.yml/badge.svg)](https://github.com/issue-ops/labeler/actions/workflows/super-linter.yml)
 [![Code Coverage](./badges/coverage.svg)](./badges/coverage.svg)
 
