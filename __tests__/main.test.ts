@@ -5,13 +5,12 @@ import * as core from '@actions/core'
 import * as main from '../src/main'
 
 // Mock the GitHub Actions core library
-const errorMock = jest.spyOn(core, 'error').mockImplementation()
-const getInputMock = jest.spyOn(core, 'getInput').mockImplementation()
-const setFailedMock = jest.spyOn(core, 'setFailed').mockImplementation()
-jest.spyOn(core, 'info').mockImplementation()
+let errorMock: jest.SpyInstance
+let getInputMock: jest.SpyInstance
+let setFailedMock: jest.SpyInstance
 
 // Mock the action's main function
-const runMock = jest.spyOn(main, 'run')
+let runMock: jest.SpyInstance
 
 // Mock Octokit
 jest.mock('@octokit/rest', () => ({
@@ -22,6 +21,13 @@ jest.mock('@octokit/rest', () => ({
 describe('Invalid Usage', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+
+    errorMock = jest.spyOn(core, 'error').mockImplementation()
+    getInputMock = jest.spyOn(core, 'getInput').mockImplementation()
+    setFailedMock = jest.spyOn(core, 'setFailed').mockImplementation()
+    jest.spyOn(core, 'info').mockImplementation()
+
+    runMock = jest.spyOn(main, 'run')
   })
 
   it('Fails on invalid action input', async () => {
