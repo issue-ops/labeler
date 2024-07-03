@@ -30454,7 +30454,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.run = void 0;
+exports.run = run;
 const rest_1 = __nccwpck_require__(5375);
 const core = __importStar(__nccwpck_require__(2186));
 /**
@@ -30555,7 +30555,6 @@ async function run() {
     }
     core.info('Done!');
 }
-exports.run = run;
 
 
 /***/ }),
