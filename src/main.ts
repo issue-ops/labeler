@@ -1,5 +1,5 @@
-import { Octokit } from '@octokit/rest'
 import * as core from '@actions/core'
+import { Octokit } from '@octokit/rest'
 
 /**
  * The entrypoint for the action
@@ -52,6 +52,7 @@ export async function run(): Promise<void> {
           owner,
           repo: repository
         })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         // Raise error if it's not a 404
         if (error.status !== 404) {
@@ -99,6 +100,7 @@ export async function run(): Promise<void> {
           owner,
           repo: repository
         })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         // Raise error if it's not a 404
         if (error.status !== 404) {

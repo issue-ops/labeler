@@ -1,208 +1,120 @@
-/**
- * Unit tests for the action's index.ts file.
- */
-import * as core from '@actions/core'
-import * as main from '../src/main'
+import { jest } from '@jest/globals'
+import * as core from '../__fixtures__/core.js'
+import * as octokit from '../__fixtures__/octokit.js'
 
-// Mock the GitHub Actions core library
-let errorMock: jest.SpyInstance
-let getInputMock: jest.SpyInstance
-let setFailedMock: jest.SpyInstance
+jest.unstable_mockModule('@actions/core', () => core)
+jest.unstable_mockModule('@octokit/rest', async () => {
+  class Octokit {
+    constructor() {
+      return octokit
+    }
+  }
 
-// Mock the action's main function
-let runMock: jest.SpyInstance
+  return {
+    Octokit
+  }
+})
 
-// Mock Octokit
-jest.mock('@octokit/rest', () => ({
-  Octokit: jest.fn()
-}))
+const main = await import('../src/main.js')
+const { Octokit } = await import('@octokit/rest')
+
+const mocktokit = jest.mocked(new Octokit())
 
 // Tests for invalid action usage
 describe('Invalid Usage', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    // Set the action's inputs as return values from core.getInput()
+    core.getInput
+      .mockReturnValueOnce('noop') // action
+      .mockReturnValueOnce('nahhhh') // create
+      .mockReturnValueOnce('token') // github_token
+      .mockReturnValueOnce([].join('\n')) // labels
+      .mockReturnValueOnce('MyAwesomeIssue') // issue_number
+      .mockReturnValueOnce('issue-ops/invalid-repo') // repository
+  })
 
-    errorMock = jest.spyOn(core, 'error').mockImplementation()
-    getInputMock = jest.spyOn(core, 'getInput').mockImplementation()
-    setFailedMock = jest.spyOn(core, 'setFailed').mockImplementation()
-    jest.spyOn(core, 'info').mockImplementation()
-
-    runMock = jest.spyOn(main, 'run')
+  afterEach(() => {
+    jest.resetAllMocks()
   })
 
   it('Fails on invalid action input', async () => {
-    // Set the action's inputs as return values from core.getInput()
-    getInputMock.mockImplementation((name: string): string => {
-      switch (name) {
-        case 'action':
-          return 'noop'
-        case 'create':
-          return 'nahhhh'
-        case 'github_token':
-          return 'token'
-        case 'labels':
-          return [].join('\n')
-        case 'issue_number':
-          return 'MyAwesomeIssue'
-        case 'repository':
-          return 'issue-ops/invalid-repo'
-        default:
-          return ''
-      }
-    })
-
-    jest.spyOn(core, 'setFailed').mockImplementation()
+    core.getInput
+      .mockReturnValueOnce('noop') // action
+      .mockReturnValueOnce('nahhhh') // create
+      .mockReturnValueOnce('token') // github_token
+      .mockReturnValueOnce([].join('\n')) // labels
+      .mockReturnValueOnce('MyAwesomeIssue') // issue_number
+      .mockReturnValueOnce('issue-ops/invalid-repo') // repository
 
     await main.run()
 
-    expect(runMock).toHaveReturned()
-    expect(getInputMock).toHaveBeenCalledWith('action', { required: true })
-    expect(setFailedMock).toHaveBeenCalledWith('Invalid action: noop')
+    expect(core.getInput).toHaveBeenCalledWith('action', { required: true })
+    expect(core.setFailed).toHaveBeenCalledWith('Invalid action: noop')
   })
 })
 
 describe('Add Labels', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    // Set the action's inputs as return values from core.getInput()
+    core.getInput
+      .mockReturnValueOnce('add') // action
+      .mockReturnValueOnce('true') // create
+      .mockReturnValueOnce('token') // github_token
+      .mockReturnValueOnce(['bug', 'enhancement'].join('\n')) // labels
+      .mockReturnValueOnce('1') // issue_number
+      .mockReturnValueOnce('issue-ops/labeler') // repository
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
   })
 
   it('Retrieves valid inputs', async () => {
-    // Set the action's inputs as return values from core.getInput()
-    getInputMock.mockImplementation((name: string): string => {
-      switch (name) {
-        case 'action':
-          return 'add'
-        case 'create':
-          return 'true'
-        case 'github_token':
-          return 'token'
-        case 'labels':
-          return ['bug', 'enhancement'].join('\n')
-        case 'issue_number':
-          return '1'
-        case 'repository':
-          return 'issue-ops/labeler'
-        default:
-          return ''
-      }
-    })
-
     await main.run()
 
-    expect(runMock).toHaveReturned()
-    expect(getInputMock).toHaveBeenCalledWith('action', { required: true })
-    expect(getInputMock).toHaveReturnedWith('add')
-    expect(getInputMock).toHaveBeenCalledWith('create')
-    expect(getInputMock).toHaveReturnedWith('true')
-    expect(getInputMock).toHaveBeenCalledWith('github_token', {
+    expect(core.getInput).toHaveBeenCalledWith('action', { required: true })
+    expect(core.getInput).toHaveReturnedWith('add')
+    expect(core.getInput).toHaveBeenCalledWith('create')
+    expect(core.getInput).toHaveReturnedWith('true')
+    expect(core.getInput).toHaveBeenCalledWith('github_token', {
       required: true
     })
-    expect(getInputMock).toHaveReturnedWith('token')
-    expect(getInputMock).toHaveBeenCalledWith('labels', { required: true })
-    expect(getInputMock).toHaveReturnedWith('bug\nenhancement')
-    expect(getInputMock).toHaveBeenCalledWith('issue_number', {
+    expect(core.getInput).toHaveReturnedWith('token')
+    expect(core.getInput).toHaveBeenCalledWith('labels', { required: true })
+    expect(core.getInput).toHaveReturnedWith('bug\nenhancement')
+    expect(core.getInput).toHaveBeenCalledWith('issue_number', {
       required: true
     })
-    expect(getInputMock).toHaveReturnedWith('1')
-    expect(getInputMock).toHaveBeenCalledWith('repository', { required: true })
-    expect(getInputMock).toHaveReturnedWith('issue-ops/labeler')
+    expect(core.getInput).toHaveReturnedWith('1')
+    expect(core.getInput).toHaveBeenCalledWith('repository', { required: true })
+    expect(core.getInput).toHaveReturnedWith('issue-ops/labeler')
   })
 
   it('Fails on GitHub API error', async () => {
-    // Set the action's inputs as return values from core.getInput()
-    getInputMock.mockImplementation((name: string): string => {
-      switch (name) {
-        case 'action':
-          return 'add'
-        case 'create':
-          return 'true'
-        case 'github_token':
-          return 'token'
-        case 'labels':
-          return ['bug', 'enhancement'].join('\n')
-        case 'issue_number':
-          return '1'
-        case 'repository':
-          return 'issue-ops/labeler'
-        default:
-          return ''
-      }
-    })
-
-    const mocktokit = {
-      rest: {
-        issues: {
-          getLabel: () => {
-            // eslint-disable-next-line no-throw-literal
-            throw {
-              status: 500,
-              message: 'API error'
-            }
-          }
-        }
-      }
-    }
-
-    jest
-      .spyOn(require('@octokit/rest'), 'Octokit')
-      .mockImplementation(() => mocktokit)
-
-    await main.run()
-
-    expect(runMock).toHaveReturned()
-    expect(errorMock).toHaveBeenCalledWith({
+    mocktokit.rest.issues.getLabel.mockRejectedValue({
       status: 500,
       message: 'API error'
     })
-    expect(setFailedMock).toHaveBeenCalledWith('API error')
-  })
-
-  it('Creates missing labels on 404 errors', async () => {
-    // Set the action's inputs as return values from core.getInput()
-    getInputMock.mockImplementation((name: string): string => {
-      switch (name) {
-        case 'action':
-          return 'add'
-        case 'create':
-          return 'true'
-        case 'github_token':
-          return 'token'
-        case 'labels':
-          return ['bug', 'enhancement'].join('\n')
-        case 'issue_number':
-          return '1'
-        case 'repository':
-          return 'issue-ops/labeler'
-        default:
-          return ''
-      }
-    })
-
-    jest.spyOn(Math, 'random').mockReturnValue(0.5)
-
-    const mocktokit = {
-      rest: {
-        issues: {
-          addLabels: jest.fn(),
-          createLabel: jest.fn(),
-          getLabel: () => {
-            // eslint-disable-next-line no-throw-literal
-            throw {
-              status: 404,
-              message: 'Not found'
-            }
-          }
-        }
-      }
-    }
-
-    jest
-      .spyOn(require('@octokit/rest'), 'Octokit')
-      .mockImplementation(() => mocktokit)
 
     await main.run()
 
-    expect(runMock).toHaveReturned()
+    expect(core.error).toHaveBeenCalledWith({
+      status: 500,
+      message: 'API error'
+    })
+    expect(core.setFailed).toHaveBeenCalledWith('API error')
+  })
+
+  it('Creates missing labels on 404 errors', async () => {
+    jest.spyOn(Math, 'random').mockReturnValue(0.5)
+
+    mocktokit.rest.issues.getLabel.mockRejectedValue({
+      status: 404,
+      message: 'Not found'
+    })
+
+    await main.run()
+
     expect(mocktokit.rest.issues.createLabel).toHaveBeenCalledWith({
       color: '7fffff',
       name: 'bug',
@@ -226,45 +138,23 @@ describe('Add Labels', () => {
 
 describe('Remove Labels', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    // Set the action's inputs as return values from core.getInput()
+    core.getInput
+      .mockReturnValueOnce('remove') // action
+      .mockReturnValueOnce('true') // create
+      .mockReturnValueOnce('token') // github_token
+      .mockReturnValueOnce(['bug', 'enhancement'].join('\n')) // labels
+      .mockReturnValueOnce('1') // issue_number
+      .mockReturnValueOnce('issue-ops/labeler') // repository
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
   })
 
   it('Removes valid labels', async () => {
-    // Set the action's inputs as return values from core.getInput()
-    getInputMock.mockImplementation((name: string): string => {
-      switch (name) {
-        case 'action':
-          return 'remove'
-        case 'create':
-          return 'true'
-        case 'github_token':
-          return 'token'
-        case 'labels':
-          return ['bug', 'enhancement'].join('\n')
-        case 'issue_number':
-          return '1'
-        case 'repository':
-          return 'issue-ops/labeler'
-        default:
-          return ''
-      }
-    })
-
-    const mocktokit = {
-      rest: {
-        issues: {
-          removeLabel: jest.fn()
-        }
-      }
-    }
-
-    jest
-      .spyOn(require('@octokit/rest'), 'Octokit')
-      .mockImplementation(() => mocktokit)
-
     await main.run()
 
-    expect(runMock).toHaveReturned()
     expect(mocktokit.rest.issues.removeLabel).toHaveBeenCalledWith({
       issue_number: 1,
       name: 'bug',
@@ -280,92 +170,24 @@ describe('Remove Labels', () => {
   })
 
   it('Skips removing missing labels', async () => {
-    // Set the action's inputs as return values from core.getInput()
-    getInputMock.mockImplementation((name: string): string => {
-      switch (name) {
-        case 'action':
-          return 'remove'
-        case 'create':
-          return 'true'
-        case 'github_token':
-          return 'token'
-        case 'labels':
-          return ['bug', 'enhancement'].join('\n')
-        case 'issue_number':
-          return '1'
-        case 'repository':
-          return 'issue-ops/labeler'
-        default:
-          return ''
-      }
+    mocktokit.rest.issues.removeLabel.mockRejectedValue({
+      status: 404,
+      message: 'Not found'
     })
-
-    const mocktokit = {
-      rest: {
-        issues: {
-          removeLabel: () => {
-            // eslint-disable-next-line no-throw-literal
-            throw {
-              status: 404,
-              message: 'Not found'
-            }
-          }
-        }
-      }
-    }
-
-    jest
-      .spyOn(require('@octokit/rest'), 'Octokit')
-      .mockImplementation(() => mocktokit)
 
     await main.run()
 
-    expect(runMock).toHaveReturned()
-    expect(setFailedMock).not.toHaveBeenCalled()
+    expect(core.setFailed).not.toHaveBeenCalled()
   })
 
   it('Fails on GitHub API error', async () => {
-    // Set the action's inputs as return values from core.getInput()
-    getInputMock.mockImplementation((name: string): string => {
-      switch (name) {
-        case 'action':
-          return 'remove'
-        case 'create':
-          return 'true'
-        case 'github_token':
-          return 'token'
-        case 'labels':
-          return ['bug', 'enhancement'].join('\n')
-        case 'issue_number':
-          return '1'
-        case 'repository':
-          return 'issue-ops/labeler'
-        default:
-          return ''
-      }
+    mocktokit.rest.issues.removeLabel.mockRejectedValue({
+      status: 500,
+      message: 'API error'
     })
-
-    const mocktokit = {
-      rest: {
-        issues: {
-          removeLabel: () => {
-            // eslint-disable-next-line no-throw-literal
-            throw {
-              status: 500,
-              message: 'API error'
-            }
-          }
-        }
-      }
-    }
-
-    jest
-      .spyOn(require('@octokit/rest'), 'Octokit')
-      .mockImplementation(() => mocktokit)
 
     await main.run()
 
-    expect(runMock).toHaveReturned()
-    expect(setFailedMock).toHaveBeenCalledWith('API error')
+    expect(core.setFailed).toHaveBeenCalledWith('API error')
   })
 })
