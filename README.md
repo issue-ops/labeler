@@ -4,10 +4,14 @@
 [![CodeQL](https://github.com/issue-ops/labeler/actions/workflows/codeql.yml/badge.svg)](https://github.com/issue-ops/labeler/actions/workflows/codeql.yml)
 [![Continuous Integration](https://github.com/issue-ops/labeler/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/issue-ops/labeler/actions/workflows/continuous-integration.yml)
 [![Continuous Delivery](https://github.com/issue-ops/labeler/actions/workflows/continuous-delivery.yml/badge.svg)](https://github.com/issue-ops/labeler/actions/workflows/continuous-delivery.yml)
-[![Super Linter](https://github.com/issue-ops/labeler/actions/workflows/super-linter.yml/badge.svg)](https://github.com/issue-ops/labeler/actions/workflows/super-linter.yml)
+[![Linter](https://github.com/issue-ops/labeler/actions/workflows/linter.yml/badge.svg)](https://github.com/issue-ops/labeler/actions/workflows/linter.yml)
 [![Code Coverage](./badges/coverage.svg)](./badges/coverage.svg)
 
 Manage labels for issues and pull requests
+
+> [!IMPORTANT]
+>
+> As of version `v2.0.0`, this action has been converted to ESM.
 
 ## About
 
