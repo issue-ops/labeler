@@ -27,10 +27,6 @@ import require$$0$9 from 'diagnostics_channel';
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
-function getDefaultExportFromCjs (x) {
-	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
-}
-
 function getAugmentedNamespace(n) {
   if (n.__esModule) return n;
   var f = n.default;
@@ -25856,20 +25852,22 @@ function requireCore () {
 var coreExports = requireCore();
 
 function getUserAgent() {
-    if (typeof navigator === "object" && "userAgent" in navigator) {
-        return navigator.userAgent;
-    }
-    if (typeof process === "object" && process.version !== undefined) {
-        return `Node.js/${process.version.substr(1)} (${process.platform}; ${process.arch})`;
-    }
-    return "<environment undetectable>";
+  if (typeof navigator === "object" && "userAgent" in navigator) {
+    return navigator.userAgent;
+  }
+
+  if (typeof process === "object" && process.version !== undefined) {
+    return `Node.js/${process.version.substr(1)} (${process.platform}; ${
+      process.arch
+    })`;
+  }
+
+  return "<environment undetectable>";
 }
 
-var beforeAfterHook = {exports: {}};
+// @ts-check
 
-var register_1 = register$1;
-
-function register$1(state, name, method, options) {
+function register(state, name, method, options) {
   if (typeof method !== "function") {
     throw new Error("method for before hook must be a function");
   }
@@ -25879,32 +25877,32 @@ function register$1(state, name, method, options) {
   }
 
   if (Array.isArray(name)) {
-    return name.reverse().reduce(function (callback, name) {
-      return register$1.bind(null, state, name, callback, options);
+    return name.reverse().reduce((callback, name) => {
+      return register.bind(null, state, name, callback, options);
     }, method)();
   }
 
-  return Promise.resolve().then(function () {
+  return Promise.resolve().then(() => {
     if (!state.registry[name]) {
       return method(options);
     }
 
-    return state.registry[name].reduce(function (method, registered) {
+    return state.registry[name].reduce((method, registered) => {
       return registered.hook.bind(null, method, options);
     }, method)();
   });
 }
 
-var add = addHook$1;
+// @ts-check
 
-function addHook$1(state, kind, name, hook) {
-  var orig = hook;
+function addHook(state, kind, name, hook) {
+  const orig = hook;
   if (!state.registry[name]) {
     state.registry[name] = [];
   }
 
   if (kind === "before") {
-    hook = function (method, options) {
+    hook = (method, options) => {
       return Promise.resolve()
         .then(orig.bind(null, options))
         .then(method.bind(null, options));
@@ -25912,25 +25910,25 @@ function addHook$1(state, kind, name, hook) {
   }
 
   if (kind === "after") {
-    hook = function (method, options) {
-      var result;
+    hook = (method, options) => {
+      let result;
       return Promise.resolve()
         .then(method.bind(null, options))
-        .then(function (result_) {
+        .then((result_) => {
           result = result_;
           return orig(result, options);
         })
-        .then(function () {
+        .then(() => {
           return result;
         });
     };
   }
 
   if (kind === "error") {
-    hook = function (method, options) {
+    hook = (method, options) => {
       return Promise.resolve()
         .then(method.bind(null, options))
-        .catch(function (error) {
+        .catch((error) => {
           return orig(error, options);
         });
     };
@@ -25942,15 +25940,15 @@ function addHook$1(state, kind, name, hook) {
   });
 }
 
-var remove = removeHook$1;
+// @ts-check
 
-function removeHook$1(state, name, method) {
+function removeHook(state, name, method) {
   if (!state.registry[name]) {
     return;
   }
 
-  var index = state.registry[name]
-    .map(function (registered) {
+  const index = state.registry[name]
+    .map((registered) => {
       return registered.orig;
     })
     .indexOf(method);
@@ -25962,72 +25960,57 @@ function removeHook$1(state, name, method) {
   state.registry[name].splice(index, 1);
 }
 
-var register = register_1;
-var addHook = add;
-var removeHook = remove;
+// @ts-check
+
 
 // bind with array of arguments: https://stackoverflow.com/a/21792913
-var bind = Function.bind;
-var bindable = bind.bind(bind);
+const bind = Function.bind;
+const bindable = bind.bind(bind);
 
 function bindApi(hook, state, name) {
-  var removeHookRef = bindable(removeHook, null).apply(
+  const removeHookRef = bindable(removeHook, null).apply(
     null,
     name ? [state, name] : [state]
   );
   hook.api = { remove: removeHookRef };
   hook.remove = removeHookRef;
-  ["before", "error", "after", "wrap"].forEach(function (kind) {
-    var args = name ? [state, kind, name] : [state, kind];
+  ["before", "error", "after", "wrap"].forEach((kind) => {
+    const args = name ? [state, kind, name] : [state, kind];
     hook[kind] = hook.api[kind] = bindable(addHook, null).apply(null, args);
   });
 }
 
-function HookSingular() {
-  var singularHookName = "h";
-  var singularHookState = {
+function Singular() {
+  const singularHookName = Symbol("Singular");
+  const singularHookState = {
     registry: {},
   };
-  var singularHook = register.bind(null, singularHookState, singularHookName);
+  const singularHook = register.bind(null, singularHookState, singularHookName);
   bindApi(singularHook, singularHookState, singularHookName);
   return singularHook;
 }
 
-function HookCollection() {
-  var state = {
+function Collection() {
+  const state = {
     registry: {},
   };
 
-  var hook = register.bind(null, state);
+  const hook = register.bind(null, state);
   bindApi(hook, state);
 
   return hook;
 }
 
-var collectionHookDeprecationMessageDisplayed = false;
-function Hook() {
-  if (!collectionHookDeprecationMessageDisplayed) {
-    console.warn(
-      '[before-after-hook]: "Hook()" repurposing warning, use "Hook.Collection()". Read more: https://git.io/upgrade-before-after-hook-to-1.4'
-    );
-    collectionHookDeprecationMessageDisplayed = true;
-  }
-  return HookCollection();
-}
+var Hook = { Singular, Collection };
 
-Hook.Singular = HookSingular.bind();
-Hook.Collection = HookCollection.bind();
+// pkg/dist-src/defaults.js
 
-beforeAfterHook.exports = Hook;
-// expose constructors as a named property for TypeScript
-beforeAfterHook.exports.Hook = Hook;
-beforeAfterHook.exports.Singular = Hook.Singular;
-var Collection = beforeAfterHook.exports.Collection = Hook.Collection;
+// pkg/dist-src/version.js
+var VERSION$7 = "0.0.0-development";
 
-const VERSION$7 = "9.0.5";
-
-const userAgent = `octokit-endpoint.js/${VERSION$7} ${getUserAgent()}`;
-const DEFAULTS = {
+// pkg/dist-src/defaults.js
+var userAgent = `octokit-endpoint.js/${VERSION$7} ${getUserAgent()}`;
+var DEFAULTS = {
   method: "GET",
   baseUrl: "https://api.github.com",
   headers: {
@@ -26039,6 +26022,7 @@ const DEFAULTS = {
   }
 };
 
+// pkg/dist-src/util/lowercase-keys.js
 function lowercaseKeys(object) {
   if (!object) {
     return {};
@@ -26049,6 +26033,7 @@ function lowercaseKeys(object) {
   }, {});
 }
 
+// pkg/dist-src/util/is-plain-object.js
 function isPlainObject$1(value) {
   if (typeof value !== "object" || value === null)
     return false;
@@ -26061,6 +26046,7 @@ function isPlainObject$1(value) {
   return typeof Ctor === "function" && Ctor instanceof Ctor && Function.prototype.call(Ctor) === Function.prototype.call(value);
 }
 
+// pkg/dist-src/util/merge-deep.js
 function mergeDeep(defaults, options) {
   const result = Object.assign({}, defaults);
   Object.keys(options).forEach((key) => {
@@ -26076,6 +26062,7 @@ function mergeDeep(defaults, options) {
   return result;
 }
 
+// pkg/dist-src/util/remove-undefined-properties.js
 function removeUndefinedProperties(obj) {
   for (const key in obj) {
     if (obj[key] === void 0) {
@@ -26085,6 +26072,7 @@ function removeUndefinedProperties(obj) {
   return obj;
 }
 
+// pkg/dist-src/merge.js
 function merge(defaults, route, options) {
   if (typeof route === "string") {
     let [method, url] = route.split(" ");
@@ -26107,6 +26095,7 @@ function merge(defaults, route, options) {
   return mergedOptions;
 }
 
+// pkg/dist-src/util/add-query-parameters.js
 function addQueryParameters(url, parameters) {
   const separator = /\?/.test(url) ? "&" : "?";
   const names = Object.keys(parameters);
@@ -26121,7 +26110,8 @@ function addQueryParameters(url, parameters) {
   }).join("&");
 }
 
-const urlVariableRegex = /\{[^}]+\}/g;
+// pkg/dist-src/util/extract-url-variable-names.js
+var urlVariableRegex = /\{[^}]+\}/g;
 function removeNonChars(variableName) {
   return variableName.replace(/^\W+|\W+$/g, "").split(/,/);
 }
@@ -26133,6 +26123,7 @@ function extractUrlVariableNames(url) {
   return matches.map(removeNonChars).reduce((a, b) => a.concat(b), []);
 }
 
+// pkg/dist-src/util/omit.js
 function omit(object, keysToOmit) {
   const result = { __proto__: null };
   for (const key of Object.keys(object)) {
@@ -26143,6 +26134,7 @@ function omit(object, keysToOmit) {
   return result;
 }
 
+// pkg/dist-src/util/url-template.js
 function encodeReserved(str) {
   return str.split(/(%[0-9A-Fa-f]{2})/g).map(function(part) {
     if (!/%[0-9A-Fa-f]/.test(part)) {
@@ -26274,6 +26266,7 @@ function expand(template, context) {
   }
 }
 
+// pkg/dist-src/parse.js
 function parse(options) {
   let method = options.method.toUpperCase();
   let url = (options.url || "/").replace(/:([a-z]\w+)/g, "{$1}");
@@ -26338,151 +26331,49 @@ function parse(options) {
   );
 }
 
+// pkg/dist-src/endpoint-with-defaults.js
 function endpointWithDefaults(defaults, route, options) {
   return parse(merge(defaults, route, options));
 }
 
+// pkg/dist-src/with-defaults.js
 function withDefaults$2(oldDefaults, newDefaults) {
-  const DEFAULTS = merge(oldDefaults, newDefaults);
-  const endpoint = endpointWithDefaults.bind(null, DEFAULTS);
-  return Object.assign(endpoint, {
-    DEFAULTS,
-    defaults: withDefaults$2.bind(null, DEFAULTS),
-    merge: merge.bind(null, DEFAULTS),
+  const DEFAULTS2 = merge(oldDefaults, newDefaults);
+  const endpoint2 = endpointWithDefaults.bind(null, DEFAULTS2);
+  return Object.assign(endpoint2, {
+    DEFAULTS: DEFAULTS2,
+    defaults: withDefaults$2.bind(null, DEFAULTS2),
+    merge: merge.bind(null, DEFAULTS2),
     parse
   });
 }
 
-const endpoint = withDefaults$2(null, DEFAULTS);
+// pkg/dist-src/index.js
+var endpoint = withDefaults$2(null, DEFAULTS);
 
-const VERSION$6 = "8.4.0";
-
-function isPlainObject(value) {
-  if (typeof value !== "object" || value === null)
-    return false;
-  if (Object.prototype.toString.call(value) !== "[object Object]")
-    return false;
-  const proto = Object.getPrototypeOf(value);
-  if (proto === null)
-    return true;
-  const Ctor = Object.prototype.hasOwnProperty.call(proto, "constructor") && proto.constructor;
-  return typeof Ctor === "function" && Ctor instanceof Ctor && Function.prototype.call(Ctor) === Function.prototype.call(value);
-}
-
-class Deprecation extends Error {
-  constructor(message) {
-    super(message); // Maintains proper stack trace (only available on V8)
-
-    /* istanbul ignore next */
-
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
-    }
-
-    this.name = 'Deprecation';
-  }
-
-}
-
-var once$2 = {exports: {}};
-
-// Returns a wrapper function that returns a wrapped callback
-// The wrapper function should do some stuff, and return a
-// presumably different callback function.
-// This makes sure that own properties are retained, so that
-// decorations and such are not lost along the way.
-var wrappy_1 = wrappy$1;
-function wrappy$1 (fn, cb) {
-  if (fn && cb) return wrappy$1(fn)(cb)
-
-  if (typeof fn !== 'function')
-    throw new TypeError('need wrapper function')
-
-  Object.keys(fn).forEach(function (k) {
-    wrapper[k] = fn[k];
-  });
-
-  return wrapper
-
-  function wrapper() {
-    var args = new Array(arguments.length);
-    for (var i = 0; i < args.length; i++) {
-      args[i] = arguments[i];
-    }
-    var ret = fn.apply(this, args);
-    var cb = args[args.length-1];
-    if (typeof ret === 'function' && ret !== cb) {
-      Object.keys(cb).forEach(function (k) {
-        ret[k] = cb[k];
-      });
-    }
-    return ret
-  }
-}
-
-var wrappy = wrappy_1;
-once$2.exports = wrappy(once);
-once$2.exports.strict = wrappy(onceStrict);
-
-once.proto = once(function () {
-  Object.defineProperty(Function.prototype, 'once', {
-    value: function () {
-      return once(this)
-    },
-    configurable: true
-  });
-
-  Object.defineProperty(Function.prototype, 'onceStrict', {
-    value: function () {
-      return onceStrict(this)
-    },
-    configurable: true
-  });
-});
-
-function once (fn) {
-  var f = function () {
-    if (f.called) return f.value
-    f.called = true;
-    return f.value = fn.apply(this, arguments)
-  };
-  f.called = false;
-  return f
-}
-
-function onceStrict (fn) {
-  var f = function () {
-    if (f.called)
-      throw new Error(f.onceError)
-    f.called = true;
-    return f.value = fn.apply(this, arguments)
-  };
-  var name = fn.name || 'Function wrapped with `once`';
-  f.onceError = name + " shouldn't be called more than once";
-  f.called = false;
-  return f
-}
-
-var onceExports = once$2.exports;
-var once$1 = /*@__PURE__*/getDefaultExportFromCjs(onceExports);
-
-const logOnceCode = once$1((deprecation) => console.warn(deprecation));
-const logOnceHeaders = once$1((deprecation) => console.warn(deprecation));
 class RequestError extends Error {
+  name;
+  /**
+   * http status code
+   */
+  status;
+  /**
+   * Request options that lead to the error.
+   */
+  request;
+  /**
+   * Response object if a response was received
+   */
+  response;
   constructor(message, statusCode, options) {
     super(message);
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
-    }
     this.name = "HttpError";
-    this.status = statusCode;
-    let headers;
-    if ("headers" in options && typeof options.headers !== "undefined") {
-      headers = options.headers;
+    this.status = Number.parseInt(statusCode);
+    if (Number.isNaN(this.status)) {
+      this.status = 0;
     }
     if ("response" in options) {
       this.response = options.response;
-      headers = options.response.headers;
     }
     const requestCopy = Object.assign({}, options.request);
     if (options.request.headers.authorization) {
@@ -26495,33 +26386,33 @@ class RequestError extends Error {
     }
     requestCopy.url = requestCopy.url.replace(/\bclient_secret=\w+/g, "client_secret=[REDACTED]").replace(/\baccess_token=\w+/g, "access_token=[REDACTED]");
     this.request = requestCopy;
-    Object.defineProperty(this, "code", {
-      get() {
-        logOnceCode(
-          new Deprecation(
-            "[@octokit/request-error] `error.code` is deprecated, use `error.status`."
-          )
-        );
-        return statusCode;
-      }
-    });
-    Object.defineProperty(this, "headers", {
-      get() {
-        logOnceHeaders(
-          new Deprecation(
-            "[@octokit/request-error] `error.headers` is deprecated, use `error.response.headers`."
-          )
-        );
-        return headers || {};
-      }
-    });
   }
 }
 
+// pkg/dist-src/index.js
+
+// pkg/dist-src/version.js
+var VERSION$6 = "0.0.0-development";
+
+// pkg/dist-src/is-plain-object.js
+function isPlainObject(value) {
+  if (typeof value !== "object" || value === null)
+    return false;
+  if (Object.prototype.toString.call(value) !== "[object Object]")
+    return false;
+  const proto = Object.getPrototypeOf(value);
+  if (proto === null)
+    return true;
+  const Ctor = Object.prototype.hasOwnProperty.call(proto, "constructor") && proto.constructor;
+  return typeof Ctor === "function" && Ctor instanceof Ctor && Function.prototype.call(Ctor) === Function.prototype.call(value);
+}
+
+// pkg/dist-src/get-buffer-response.js
 function getBufferResponse(response) {
   return response.arrayBuffer();
 }
 
+// pkg/dist-src/fetch-wrapper.js
 function fetchWrapper(requestOptions) {
   const log = requestOptions.request && requestOptions.request.log ? requestOptions.request.log : console;
   const parseSuccessResponseBody = requestOptions.request?.parseSuccessResponseBody !== false;
@@ -26544,7 +26435,13 @@ function fetchWrapper(requestOptions) {
     method: requestOptions.method,
     body: requestOptions.body,
     redirect: requestOptions.request?.redirect,
-    headers: requestOptions.headers,
+    // Header values must be `string`
+    headers: Object.fromEntries(
+      Object.entries(requestOptions.headers).map(([name, value]) => [
+        name,
+        String(value)
+      ])
+    ),
     signal: requestOptions.request?.signal,
     // duplex must be set if request.body is ReadableStream or Async Iterables.
     // See https://fetch.spec.whatwg.org/#dom-requestinit-duplex.
@@ -26657,31 +26554,33 @@ function toErrorMessage(data) {
   return `Unknown error: ${JSON.stringify(data)}`;
 }
 
+// pkg/dist-src/with-defaults.js
 function withDefaults$1(oldEndpoint, newDefaults) {
-  const endpoint = oldEndpoint.defaults(newDefaults);
+  const endpoint2 = oldEndpoint.defaults(newDefaults);
   const newApi = function(route, parameters) {
-    const endpointOptions = endpoint.merge(route, parameters);
+    const endpointOptions = endpoint2.merge(route, parameters);
     if (!endpointOptions.request || !endpointOptions.request.hook) {
-      return fetchWrapper(endpoint.parse(endpointOptions));
+      return fetchWrapper(endpoint2.parse(endpointOptions));
     }
-    const request = (route2, parameters2) => {
+    const request2 = (route2, parameters2) => {
       return fetchWrapper(
-        endpoint.parse(endpoint.merge(route2, parameters2))
+        endpoint2.parse(endpoint2.merge(route2, parameters2))
       );
     };
-    Object.assign(request, {
-      endpoint,
-      defaults: withDefaults$1.bind(null, endpoint)
+    Object.assign(request2, {
+      endpoint: endpoint2,
+      defaults: withDefaults$1.bind(null, endpoint2)
     });
-    return endpointOptions.request.hook(request, endpointOptions);
+    return endpointOptions.request.hook(request2, endpointOptions);
   };
   return Object.assign(newApi, {
-    endpoint,
-    defaults: withDefaults$1.bind(null, endpoint)
+    endpoint: endpoint2,
+    defaults: withDefaults$1.bind(null, endpoint2)
   });
 }
 
-const request = withDefaults$1(endpoint, {
+// pkg/dist-src/index.js
+var request = withDefaults$1(endpoint, {
   headers: {
     "user-agent": `octokit-request.js/${VERSION$6} ${getUserAgent()}`
   }
@@ -26690,7 +26589,7 @@ const request = withDefaults$1(endpoint, {
 // pkg/dist-src/index.js
 
 // pkg/dist-src/version.js
-var VERSION$5 = "7.1.0";
+var VERSION$5 = "0.0.0-development";
 
 // pkg/dist-src/error.js
 function _buildMessageForResponseErrors(data) {
@@ -26703,13 +26602,15 @@ var GraphqlResponseError = class extends Error {
     this.request = request2;
     this.headers = headers;
     this.response = response;
-    this.name = "GraphqlResponseError";
     this.errors = response.errors;
     this.data = response.data;
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, this.constructor);
     }
   }
+  name = "GraphqlResponseError";
+  errors;
+  data;
 };
 
 // pkg/dist-src/graphql.js
@@ -26802,9 +26703,10 @@ function withCustomRequest(customRequest) {
   });
 }
 
-const REGEX_IS_INSTALLATION_LEGACY = /^v1\./;
-const REGEX_IS_INSTALLATION = /^ghs_/;
-const REGEX_IS_USER_TO_SERVER = /^ghu_/;
+// pkg/dist-src/auth.js
+var REGEX_IS_INSTALLATION_LEGACY = /^v1\./;
+var REGEX_IS_INSTALLATION = /^ghs_/;
+var REGEX_IS_USER_TO_SERVER = /^ghu_/;
 async function auth(token) {
   const isApp = token.split(/\./).length === 3;
   const isInstallation = REGEX_IS_INSTALLATION_LEGACY.test(token) || REGEX_IS_INSTALLATION.test(token);
@@ -26817,6 +26719,7 @@ async function auth(token) {
   };
 }
 
+// pkg/dist-src/with-authorization-prefix.js
 function withAuthorizationPrefix(token) {
   if (token.split(/\./).length === 3) {
     return `bearer ${token}`;
@@ -26824,6 +26727,7 @@ function withAuthorizationPrefix(token) {
   return `token ${token}`;
 }
 
+// pkg/dist-src/hook.js
 async function hook(token, request, route, parameters) {
   const endpoint = request.endpoint.merge(
     route,
@@ -26833,7 +26737,8 @@ async function hook(token, request, route, parameters) {
   return request(endpoint);
 }
 
-const createTokenAuth = function createTokenAuth2(token) {
+// pkg/dist-src/index.js
+var createTokenAuth = function createTokenAuth2(token) {
   if (!token) {
     throw new Error("[@octokit/auth-token] No token passed to createTokenAuth");
   }
@@ -26848,21 +26753,15 @@ const createTokenAuth = function createTokenAuth2(token) {
   });
 };
 
-// pkg/dist-src/index.js
+const VERSION$4 = "6.1.2";
 
-// pkg/dist-src/version.js
-var VERSION$4 = "5.2.0";
-
-// pkg/dist-src/index.js
-var noop = () => {
+const noop = () => {
 };
-var consoleWarn = console.warn.bind(console);
-var consoleError = console.error.bind(console);
-var userAgentTrail = `octokit-core.js/${VERSION$4} ${getUserAgent()}`;
-var Octokit$1 = class Octokit {
-  static {
-    this.VERSION = VERSION$4;
-  }
+const consoleWarn = console.warn.bind(console);
+const consoleError = console.error.bind(console);
+const userAgentTrail = `octokit-core.js/${VERSION$4} ${getUserAgent()}`;
+let Octokit$1 = class Octokit {
+  static VERSION = VERSION$4;
   static defaults(defaults) {
     const OctokitWithDefaults = class extends this {
       constructor(...args) {
@@ -26885,9 +26784,7 @@ var Octokit$1 = class Octokit {
     };
     return OctokitWithDefaults;
   }
-  static {
-    this.plugins = [];
-  }
+  static plugins = [];
   /**
    * Attach a plugin (or many) to your Octokit instance.
    *
@@ -26897,16 +26794,14 @@ var Octokit$1 = class Octokit {
   static plugin(...newPlugins) {
     const currentPlugins = this.plugins;
     const NewOctokit = class extends this {
-      static {
-        this.plugins = currentPlugins.concat(
-          newPlugins.filter((plugin) => !currentPlugins.includes(plugin))
-        );
-      }
+      static plugins = currentPlugins.concat(
+        newPlugins.filter((plugin) => !currentPlugins.includes(plugin))
+      );
     };
     return NewOctokit;
   }
   constructor(options = {}) {
-    const hook = new Collection();
+    const hook = new Hook.Collection();
     const requestDefaults = {
       baseUrl: request.endpoint.DEFAULTS.baseUrl,
       headers: {},
@@ -26977,9 +26872,16 @@ var Octokit$1 = class Octokit {
       Object.assign(this, classConstructor.plugins[i](this, options));
     }
   }
+  // assigned during constructor
+  request;
+  graphql;
+  log;
+  hook;
+  // TODO: type `octokit.auth` based on passed options.authStrategy
+  auth;
 };
 
-const VERSION$3 = "4.0.0";
+const VERSION$3 = "5.3.0";
 
 function requestLog(octokit) {
   octokit.hook.wrap("request", (request, options) => {
@@ -26988,13 +26890,15 @@ function requestLog(octokit) {
     const requestOptions = octokit.request.endpoint.parse(options);
     const path = requestOptions.url.replace(options.baseUrl, "");
     return request(options).then((response) => {
+      const requestId = response.headers["x-github-request-id"];
       octokit.log.info(
-        `${requestOptions.method} ${path} - ${response.status} in ${Date.now() - start}ms`
+        `${requestOptions.method} ${path} - ${response.status} with id ${requestId} in ${Date.now() - start}ms`
       );
       return response;
     }).catch((error) => {
-      octokit.log.info(
-        `${requestOptions.method} ${path} - ${error.status} in ${Date.now() - start}ms`
+      const requestId = error.response.headers["x-github-request-id"] || "UNKNOWN";
+      octokit.log.error(
+        `${requestOptions.method} ${path} - ${error.status} with id ${requestId} in ${Date.now() - start}ms`
       );
       throw error;
     });
@@ -29191,19 +29095,13 @@ function legacyRestEndpointMethods(octokit) {
 }
 legacyRestEndpointMethods.VERSION = VERSION$1;
 
-// pkg/dist-src/index.js
+const VERSION = "21.0.0";
 
-// pkg/dist-src/version.js
-var VERSION = "20.1.1";
-
-// pkg/dist-src/index.js
-var Octokit = Octokit$1.plugin(
-  requestLog,
-  legacyRestEndpointMethods,
-  paginateRest
-).defaults({
-  userAgent: `octokit-rest.js/${VERSION}`
-});
+const Octokit = Octokit$1.plugin(requestLog, legacyRestEndpointMethods, paginateRest).defaults(
+  {
+    userAgent: `octokit-rest.js/${VERSION}`
+  }
+);
 
 /**
  * The entrypoint for the action
