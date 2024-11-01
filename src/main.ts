@@ -5,38 +5,34 @@ import { Octokit } from '@octokit/rest'
  * The entrypoint for the action
  */
 export async function run(): Promise<void> {
-  // Get input: action
+  // Get inputs
   const action: string = core.getInput('action', { required: true })
-
-  // Verify action is `add` or `remove`
-  if (!['add', 'remove'].includes(action)) {
-    core.setFailed(`Invalid action: ${action}`)
-    return
-  }
-
-  // Get input: create
   const create: boolean = core.getInput('create') === 'true'
-
-  // Get input: github_token
   const githubToken: string = core.getInput('github_token', { required: true })
-
-  // Get input: labels
   const labels: string[] = core
     .getInput('labels', { required: true })
     .trim()
     .split('\n')
-
-  // Get input: number
   const issueNumber: number = parseInt(
     core.getInput('issue_number', { required: true })
   )
-
-  // Get input: repository
-  const repositoryInput: string = core.getInput('repository', {
+  const repository: string = core.getInput('repository', {
     required: true
   })
-  const owner: string = repositoryInput.split('/')[0]
-  const repository: string = repositoryInput.split('/')[1]
+
+  core.info('Running action with the following inputs:')
+  core.info(`  - Action: ${action}`)
+  core.info(`  - Create: ${create}`)
+  core.info(`  - Issue Number: ${issueNumber}`)
+  core.info(`  - Labels: ${labels.join(', ')}`)
+  core.info(`  - Repository: ${repository}`)
+
+  // Verify action is `add` or `remove`
+  if (!['add', 'remove'].includes(action))
+    return core.setFailed(`Invalid action: ${action}`)
+
+  const owner: string = repository.split('/')[0]
+  const repo: string = repository.split('/')[1]
 
   // Create the Octokit client
   const github: Octokit = new Octokit({ auth: githubToken })
@@ -50,16 +46,12 @@ export async function run(): Promise<void> {
         await github.rest.issues.getLabel({
           name: label,
           owner,
-          repo: repository
+          repo
         })
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         // Raise error if it's not a 404
-        if (error.status !== 404) {
-          core.error(error)
-          core.setFailed(error.message)
-          return
-        }
+        if (error.status !== 404) return core.setFailed(error.message)
 
         // Label doesn't exist
         missingLabels.push(label)
@@ -67,12 +59,12 @@ export async function run(): Promise<void> {
     }
 
     // Create missing labels (assign a random-ish color)
-    if (create && missingLabels.length > 0) {
+    if (create)
       for (const label of missingLabels) {
         await github.rest.issues.createLabel({
           name: label,
           owner,
-          repo: repository,
+          repo,
           color: Math.floor((Math.random() * 0xffffff) << 0)
             .toString(16)
             .padStart(6, '0')
@@ -80,14 +72,13 @@ export async function run(): Promise<void> {
 
         core.info(`Created label: ${label}`)
       }
-    }
 
     // Add the labels to the issue
     await github.rest.issues.addLabels({
       issue_number: issueNumber,
       labels,
       owner,
-      repo: repository
+      repo
     })
 
     core.info(`Added labels to #${issueNumber}: ${labels.join(', ')}`)
@@ -98,16 +89,12 @@ export async function run(): Promise<void> {
           issue_number: issueNumber,
           name: label,
           owner,
-          repo: repository
+          repo
         })
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         // Raise error if it's not a 404
-        if (error.status !== 404) {
-          core.error(error)
-          core.setFailed(error.message)
-          return
-        }
+        if (error.status !== 404) return core.setFailed(error.message)
       }
     }
 

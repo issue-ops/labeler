@@ -98,10 +98,6 @@ describe('Add Labels', () => {
 
     await main.run()
 
-    expect(core.error).toHaveBeenCalledWith({
-      status: 500,
-      message: 'API error'
-    })
     expect(core.setFailed).toHaveBeenCalledWith('API error')
   })
 
