@@ -29509,29 +29509,28 @@ const Octokit = Octokit$1.plugin(requestLog, legacyRestEndpointMethods, paginate
  * The entrypoint for the action
  */
 async function run() {
-    // Get input: action
+    // Get inputs
     const action = coreExports.getInput('action', { required: true });
-    // Verify action is `add` or `remove`
-    if (!['add', 'remove'].includes(action)) {
-        coreExports.setFailed(`Invalid action: ${action}`);
-        return;
-    }
-    // Get input: create
     const create = coreExports.getInput('create') === 'true';
-    // Get input: github_token
     const githubToken = coreExports.getInput('github_token', { required: true });
-    // Get input: labels
     const labels = coreExports.getInput('labels', { required: true })
         .trim()
         .split('\n');
-    // Get input: number
     const issueNumber = parseInt(coreExports.getInput('issue_number', { required: true }));
-    // Get input: repository
-    const repositoryInput = coreExports.getInput('repository', {
+    const repository = coreExports.getInput('repository', {
         required: true
     });
-    const owner = repositoryInput.split('/')[0];
-    const repository = repositoryInput.split('/')[1];
+    coreExports.info('Running action with the following inputs:');
+    coreExports.info(`  - Action: ${action}`);
+    coreExports.info(`  - Create: ${create}`);
+    coreExports.info(`  - Issue Number: ${issueNumber}`);
+    coreExports.info(`  - Labels: ${labels.join(', ')}`);
+    coreExports.info(`  - Repository: ${repository}`);
+    // Verify action is `add` or `remove`
+    if (!['add', 'remove'].includes(action))
+        return coreExports.setFailed(`Invalid action: ${action}`);
+    const owner = repository.split('/')[0];
+    const repo = repository.split('/')[1];
     // Create the Octokit client
     const github = new Octokit({ auth: githubToken });
     if (action === 'add') {
@@ -29542,41 +29541,37 @@ async function run() {
                 await github.rest.issues.getLabel({
                     name: label,
                     owner,
-                    repo: repository
+                    repo
                 });
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             }
             catch (error) {
                 // Raise error if it's not a 404
-                if (error.status !== 404) {
-                    coreExports.error(error);
-                    coreExports.setFailed(error.message);
-                    return;
-                }
+                if (error.status !== 404)
+                    return coreExports.setFailed(error.message);
                 // Label doesn't exist
                 missingLabels.push(label);
             }
         }
         // Create missing labels (assign a random-ish color)
-        if (create && missingLabels.length > 0) {
+        if (create)
             for (const label of missingLabels) {
                 await github.rest.issues.createLabel({
                     name: label,
                     owner,
-                    repo: repository,
+                    repo,
                     color: Math.floor((Math.random() * 0xffffff) << 0)
                         .toString(16)
                         .padStart(6, '0')
                 });
                 coreExports.info(`Created label: ${label}`);
             }
-        }
         // Add the labels to the issue
         await github.rest.issues.addLabels({
             issue_number: issueNumber,
             labels,
             owner,
-            repo: repository
+            repo
         });
         coreExports.info(`Added labels to #${issueNumber}: ${labels.join(', ')}`);
     }
@@ -29587,17 +29582,14 @@ async function run() {
                     issue_number: issueNumber,
                     name: label,
                     owner,
-                    repo: repository
+                    repo
                 });
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             }
             catch (error) {
                 // Raise error if it's not a 404
-                if (error.status !== 404) {
-                    coreExports.error(error);
-                    coreExports.setFailed(error.message);
-                    return;
-                }
+                if (error.status !== 404)
+                    return coreExports.setFailed(error.message);
             }
         }
         coreExports.info(`Removed labels from #${issueNumber}: ${labels.join(', ')}`);
