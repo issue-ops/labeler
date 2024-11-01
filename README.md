@@ -1,11 +1,11 @@
 # IssueOps Labeler
 
-[![Check dist/](https://github.com/issue-ops/labeler/actions/workflows/check-dist.yml/badge.svg)](https://github.com/issue-ops/labeler/actions/workflows/check-dist.yml)
-[![CodeQL](https://github.com/issue-ops/labeler/actions/workflows/codeql.yml/badge.svg)](https://github.com/issue-ops/labeler/actions/workflows/codeql.yml)
-[![Continuous Integration](https://github.com/issue-ops/labeler/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/issue-ops/labeler/actions/workflows/continuous-integration.yml)
-[![Continuous Delivery](https://github.com/issue-ops/labeler/actions/workflows/continuous-delivery.yml/badge.svg)](https://github.com/issue-ops/labeler/actions/workflows/continuous-delivery.yml)
-[![Linter](https://github.com/issue-ops/labeler/actions/workflows/linter.yml/badge.svg)](https://github.com/issue-ops/labeler/actions/workflows/linter.yml)
-[![Code Coverage](./badges/coverage.svg)](./badges/coverage.svg)
+![Check dist/](https://github.com/issue-ops/labeler/actions/workflows/check-dist.yml/badge.svg)
+![CodeQL](https://github.com/issue-ops/labeler/actions/workflows/codeql.yml/badge.svg)
+![Continuous Integration](https://github.com/issue-ops/labeler/actions/workflows/continuous-integration.yml/badge.svg)
+![Continuous Delivery](https://github.com/issue-ops/labeler/actions/workflows/continuous-delivery.yml/badge.svg)
+![Linter](https://github.com/issue-ops/labeler/actions/workflows/linter.yml/badge.svg)
+![Code Coverage](./badges/coverage.svg)
 
 Manage labels for issues and pull requests
 
@@ -23,6 +23,11 @@ Here is a simple example of how to use this action in your workflow. Make sure
 to replace `vX.X.X` with the latest version of this action.
 
 ```yaml
+on:
+  issues:
+    types:
+      - opened
+
 jobs:
   example:
     name: Example
@@ -39,7 +44,7 @@ jobs:
         uses: issue-ops/labeler@vX.X.X
         with:
           action: add
-          issue_number: 1
+          issue_number: ${{ github.event.issue.number }}
           labels: |
             enhancement
             great-first-issue
@@ -50,7 +55,7 @@ jobs:
         uses: issue-ops/labeler@vX.X.X
         with:
           action: remove
-          issue_number: 1
+          issue_number: ${{ github.event.issue.number }}
           labels: |
             enhancement
             great-first-issue
@@ -65,14 +70,14 @@ jobs:
 
 ## Inputs
 
-| Input          | Default                    | Description                    |
-| -------------- | -------------------------- | ------------------------------ |
-| `action`       | `add`                      | The action (`add` or `remove`) |
-| `create`       | `'false'`                  | Create label, if not present   |
-| `github_token` | `${{ github.token }}`      | The GitHub API token to use    |
-| `labels`       | `label1`                   | **Line-separated** label list  |
-| `issue_number` |                            | The issue or PR numer          |
-| `repository`   | `${{ github.repository }}` | The repository (`owner/repo`)  |
+| Input          | Default                                                                         | Description                    |
+| -------------- | ------------------------------------------------------------------------------- | ------------------------------ |
+| `action`       | `add`                                                                           | The action (`add` or `remove`) |
+| `create`       | `'false'`                                                                       | Create label, if not present   |
+| `github_token` | `${{ github.token }}`                                                           | The GitHub API token to use    |
+| `labels`       | `label1`                                                                        | **Line-separated** label list  |
+| `issue_number` | `${{ github.event.issue.number }}` or `${{ github.event.pull_request.number }}` | The issue or PR numer          |
+| `repository`   | `${{ github.repository }}`                                                      | The repository (`owner/repo`)  |
 
 > [!WARNING]
 >
