@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@eslint/compat": "^1.2.4",
-    "@octokit/openapi-types": "^22.2.0",
+    "@octokit/openapi-types": "^23.0.1",
     "@octokit/types": "^13.6.2",
     "@rollup/plugin-commonjs": "^28.0.2",
     "@rollup/plugin-node-resolve": "^16.0.0",
