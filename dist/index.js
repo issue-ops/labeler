@@ -28037,14 +28037,17 @@ function withCustomRequest(customRequest) {
   });
 }
 
+// pkg/dist-src/is-jwt.js
+var b64url = "(?:[a-zA-Z0-9_-]+)";
+var sep = "\\.";
+var jwtRE = new RegExp(`^${b64url}${sep}${b64url}${sep}${b64url}$`);
+var isJWT = jwtRE.test.bind(jwtRE);
+
 // pkg/dist-src/auth.js
-var REGEX_IS_INSTALLATION_LEGACY = /^v1\./;
-var REGEX_IS_INSTALLATION = /^ghs_/;
-var REGEX_IS_USER_TO_SERVER = /^ghu_/;
 async function auth(token) {
-  const isApp = token.split(/\./).length === 3;
-  const isInstallation = REGEX_IS_INSTALLATION_LEGACY.test(token) || REGEX_IS_INSTALLATION.test(token);
-  const isUserToServer = REGEX_IS_USER_TO_SERVER.test(token);
+  const isApp = isJWT(token);
+  const isInstallation = token.startsWith("v1.") || token.startsWith("ghs_");
+  const isUserToServer = token.startsWith("ghu_");
   const tokenType = isApp ? "app" : isInstallation ? "installation" : isUserToServer ? "user-to-server" : "oauth";
   return {
     type: "token",
@@ -28087,7 +28090,7 @@ var createTokenAuth = function createTokenAuth2(token) {
   });
 };
 
-const VERSION$4 = "6.1.4";
+const VERSION$4 = "7.0.2";
 
 const noop = () => {
 };
@@ -28215,7 +28218,7 @@ let Octokit$1 = class Octokit {
   auth;
 };
 
-const VERSION$3 = "5.3.1";
+const VERSION$3 = "6.0.0";
 
 function requestLog(octokit) {
   octokit.hook.wrap("request", (request, options) => {
@@ -28353,7 +28356,7 @@ function paginateRest(octokit) {
 }
 paginateRest.VERSION = VERSION$2;
 
-const VERSION$1 = "13.3.0";
+const VERSION$1 = "16.0.0";
 
 const Endpoints = {
   actions: {
@@ -28381,6 +28384,7 @@ const Endpoints = {
     createEnvironmentVariable: [
       "POST /repos/{owner}/{repo}/environments/{environment_name}/variables"
     ],
+    createHostedRunnerForOrg: ["POST /orgs/{org}/actions/hosted-runners"],
     createOrUpdateEnvironmentSecret: [
       "PUT /repos/{owner}/{repo}/environments/{environment_name}/secrets/{secret_name}"
     ],
@@ -28417,6 +28421,9 @@ const Endpoints = {
     ],
     deleteEnvironmentVariable: [
       "DELETE /repos/{owner}/{repo}/environments/{environment_name}/variables/{name}"
+    ],
+    deleteHostedRunnerForOrg: [
+      "DELETE /orgs/{org}/actions/hosted-runners/{hosted_runner_id}"
     ],
     deleteOrgSecret: ["DELETE /orgs/{org}/actions/secrets/{secret_name}"],
     deleteOrgVariable: ["DELETE /orgs/{org}/actions/variables/{name}"],
@@ -28506,6 +28513,24 @@ const Endpoints = {
     getGithubActionsPermissionsRepository: [
       "GET /repos/{owner}/{repo}/actions/permissions"
     ],
+    getHostedRunnerForOrg: [
+      "GET /orgs/{org}/actions/hosted-runners/{hosted_runner_id}"
+    ],
+    getHostedRunnersGithubOwnedImagesForOrg: [
+      "GET /orgs/{org}/actions/hosted-runners/images/github-owned"
+    ],
+    getHostedRunnersLimitsForOrg: [
+      "GET /orgs/{org}/actions/hosted-runners/limits"
+    ],
+    getHostedRunnersMachineSpecsForOrg: [
+      "GET /orgs/{org}/actions/hosted-runners/machine-sizes"
+    ],
+    getHostedRunnersPartnerImagesForOrg: [
+      "GET /orgs/{org}/actions/hosted-runners/images/partner"
+    ],
+    getHostedRunnersPlatformsForOrg: [
+      "GET /orgs/{org}/actions/hosted-runners/platforms"
+    ],
     getJobForWorkflowRun: ["GET /repos/{owner}/{repo}/actions/jobs/{job_id}"],
     getOrgPublicKey: ["GET /orgs/{org}/actions/secrets/public-key"],
     getOrgSecret: ["GET /orgs/{org}/actions/secrets/{secret_name}"],
@@ -28549,6 +28574,10 @@ const Endpoints = {
     listEnvironmentVariables: [
       "GET /repos/{owner}/{repo}/environments/{environment_name}/variables"
     ],
+    listGithubHostedRunnersInGroupForOrg: [
+      "GET /orgs/{org}/actions/runner-groups/{runner_group_id}/hosted-runners"
+    ],
+    listHostedRunnersForOrg: ["GET /orgs/{org}/actions/hosted-runners"],
     listJobsForWorkflowRun: [
       "GET /repos/{owner}/{repo}/actions/runs/{run_id}/jobs"
     ],
@@ -28666,6 +28695,9 @@ const Endpoints = {
     ],
     updateEnvironmentVariable: [
       "PATCH /repos/{owner}/{repo}/environments/{environment_name}/variables/{name}"
+    ],
+    updateHostedRunnerForOrg: [
+      "PATCH /orgs/{org}/actions/hosted-runners/{hosted_runner_id}"
     ],
     updateOrgVariable: ["PATCH /orgs/{org}/actions/variables/{name}"],
     updateRepoVariable: [
@@ -28797,6 +28829,9 @@ const Endpoints = {
     getGithubBillingUsageReportOrg: [
       "GET /organizations/{org}/settings/billing/usage"
     ],
+    getGithubBillingUsageReportUser: [
+      "GET /users/{username}/settings/billing/usage"
+    ],
     getGithubPackagesBillingOrg: ["GET /orgs/{org}/settings/billing/packages"],
     getGithubPackagesBillingUser: [
       "GET /users/{username}/settings/billing/packages"
@@ -28807,6 +28842,13 @@ const Endpoints = {
     getSharedStorageBillingUser: [
       "GET /users/{username}/settings/billing/shared-storage"
     ]
+  },
+  campaigns: {
+    createCampaign: ["POST /orgs/{org}/campaigns"],
+    deleteCampaign: ["DELETE /orgs/{org}/campaigns/{campaign_number}"],
+    getCampaignSummary: ["GET /orgs/{org}/campaigns/{campaign_number}"],
+    listOrgCampaigns: ["GET /orgs/{org}/campaigns"],
+    updateCampaign: ["PATCH /orgs/{org}/campaigns/{campaign_number}"]
   },
   checks: {
     create: ["POST /repos/{owner}/{repo}/check-runs"],
@@ -29086,10 +29128,9 @@ const Endpoints = {
     getCopilotSeatDetailsForUser: [
       "GET /orgs/{org}/members/{username}/copilot"
     ],
-    listCopilotSeats: ["GET /orgs/{org}/copilot/billing/seats"],
-    usageMetricsForOrg: ["GET /orgs/{org}/copilot/usage"],
-    usageMetricsForTeam: ["GET /orgs/{org}/team/{team_slug}/copilot/usage"]
+    listCopilotSeats: ["GET /orgs/{org}/copilot/billing/seats"]
   },
+  credentials: { revoke: ["POST /credentials/revoke"] },
   dependabot: {
     addSelectedRepoToOrgSecret: [
       "PUT /orgs/{org}/dependabot/secrets/{secret_name}/repositories/{repository_id}"
@@ -29183,6 +29224,26 @@ const Endpoints = {
   gitignore: {
     getAllTemplates: ["GET /gitignore/templates"],
     getTemplate: ["GET /gitignore/templates/{name}"]
+  },
+  hostedCompute: {
+    createNetworkConfigurationForOrg: [
+      "POST /orgs/{org}/settings/network-configurations"
+    ],
+    deleteNetworkConfigurationFromOrg: [
+      "DELETE /orgs/{org}/settings/network-configurations/{network_configuration_id}"
+    ],
+    getNetworkConfigurationForOrg: [
+      "GET /orgs/{org}/settings/network-configurations/{network_configuration_id}"
+    ],
+    getNetworkSettingsForOrg: [
+      "GET /orgs/{org}/settings/network-settings/{network_settings_id}"
+    ],
+    listNetworkConfigurationsForOrg: [
+      "GET /orgs/{org}/settings/network-configurations"
+    ],
+    updateNetworkConfigurationForOrg: [
+      "PATCH /orgs/{org}/settings/network-configurations/{network_configuration_id}"
+    ]
   },
   interactions: {
     getRestrictionsForAuthenticatedUser: ["GET /user/interaction-limits"],
@@ -29375,6 +29436,7 @@ const Endpoints = {
       "PUT /orgs/{org}/outside_collaborators/{username}"
     ],
     createInvitation: ["POST /orgs/{org}/invitations"],
+    createIssueType: ["POST /orgs/{org}/issue-types"],
     createOrUpdateCustomProperties: ["PATCH /orgs/{org}/properties/schema"],
     createOrUpdateCustomPropertiesValuesForRepos: [
       "PATCH /orgs/{org}/properties/values"
@@ -29384,6 +29446,7 @@ const Endpoints = {
     ],
     createWebhook: ["POST /orgs/{org}/hooks"],
     delete: ["DELETE /orgs/{org}"],
+    deleteIssueType: ["DELETE /orgs/{org}/issue-types/{issue_type_id}"],
     deleteWebhook: ["DELETE /orgs/{org}/hooks/{hook_id}"],
     enableOrDisableSecurityProductOnAllOrgRepos: [
       "POST /orgs/{org}/{security_product}/{enablement}",
@@ -29400,6 +29463,10 @@ const Endpoints = {
     getMembershipForAuthenticatedUser: ["GET /user/memberships/orgs/{org}"],
     getMembershipForUser: ["GET /orgs/{org}/memberships/{username}"],
     getOrgRole: ["GET /orgs/{org}/organization-roles/{role_id}"],
+    getOrgRulesetHistory: ["GET /orgs/{org}/rulesets/{ruleset_id}/history"],
+    getOrgRulesetVersion: [
+      "GET /orgs/{org}/rulesets/{ruleset_id}/history/{version_id}"
+    ],
     getWebhook: ["GET /orgs/{org}/hooks/{hook_id}"],
     getWebhookConfigForOrg: ["GET /orgs/{org}/hooks/{hook_id}/config"],
     getWebhookDelivery: [
@@ -29414,6 +29481,7 @@ const Endpoints = {
     listForAuthenticatedUser: ["GET /user/orgs"],
     listForUser: ["GET /users/{username}/orgs"],
     listInvitationTeams: ["GET /orgs/{org}/invitations/{invitation_id}/teams"],
+    listIssueTypes: ["GET /orgs/{org}/issue-types"],
     listMembers: ["GET /orgs/{org}/members"],
     listMembershipsForAuthenticatedUser: ["GET /user/memberships/orgs"],
     listOrgRoleTeams: ["GET /orgs/{org}/organization-roles/{role_id}/teams"],
@@ -29488,6 +29556,7 @@ const Endpoints = {
     ],
     unblockUser: ["DELETE /orgs/{org}/blocks/{username}"],
     update: ["PATCH /orgs/{org}"],
+    updateIssueType: ["PUT /orgs/{org}/issue-types/{issue_type_id}"],
     updateMembershipForAuthenticatedUser: [
       "PATCH /user/memberships/orgs/{org}"
     ],
@@ -29599,37 +29668,6 @@ const Endpoints = {
     updateOrgPrivateRegistry: [
       "PATCH /orgs/{org}/private-registries/{secret_name}"
     ]
-  },
-  projects: {
-    addCollaborator: ["PUT /projects/{project_id}/collaborators/{username}"],
-    createCard: ["POST /projects/columns/{column_id}/cards"],
-    createColumn: ["POST /projects/{project_id}/columns"],
-    createForAuthenticatedUser: ["POST /user/projects"],
-    createForOrg: ["POST /orgs/{org}/projects"],
-    createForRepo: ["POST /repos/{owner}/{repo}/projects"],
-    delete: ["DELETE /projects/{project_id}"],
-    deleteCard: ["DELETE /projects/columns/cards/{card_id}"],
-    deleteColumn: ["DELETE /projects/columns/{column_id}"],
-    get: ["GET /projects/{project_id}"],
-    getCard: ["GET /projects/columns/cards/{card_id}"],
-    getColumn: ["GET /projects/columns/{column_id}"],
-    getPermissionForUser: [
-      "GET /projects/{project_id}/collaborators/{username}/permission"
-    ],
-    listCards: ["GET /projects/columns/{column_id}/cards"],
-    listCollaborators: ["GET /projects/{project_id}/collaborators"],
-    listColumns: ["GET /projects/{project_id}/columns"],
-    listForOrg: ["GET /orgs/{org}/projects"],
-    listForRepo: ["GET /repos/{owner}/{repo}/projects"],
-    listForUser: ["GET /users/{username}/projects"],
-    moveCard: ["POST /projects/columns/cards/{card_id}/moves"],
-    moveColumn: ["POST /projects/columns/{column_id}/moves"],
-    removeCollaborator: [
-      "DELETE /projects/{project_id}/collaborators/{username}"
-    ],
-    update: ["PATCH /projects/{project_id}"],
-    updateCard: ["PATCH /projects/columns/cards/{card_id}"],
-    updateColumn: ["PATCH /projects/columns/{column_id}"]
   },
   pulls: {
     checkIfMerged: ["GET /repos/{owner}/{repo}/pulls/{pull_number}/merge"],
@@ -30002,6 +30040,12 @@ const Endpoints = {
     ],
     getRepoRuleSuites: ["GET /repos/{owner}/{repo}/rulesets/rule-suites"],
     getRepoRuleset: ["GET /repos/{owner}/{repo}/rulesets/{ruleset_id}"],
+    getRepoRulesetHistory: [
+      "GET /repos/{owner}/{repo}/rulesets/{ruleset_id}/history"
+    ],
+    getRepoRulesetVersion: [
+      "GET /repos/{owner}/{repo}/rulesets/{ruleset_id}/history/{version_id}"
+    ],
     getRepoRulesets: ["GET /repos/{owner}/{repo}/rulesets"],
     getStatusChecksProtection: [
       "GET /repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks"
@@ -30175,7 +30219,13 @@ const Endpoints = {
   search: {
     code: ["GET /search/code"],
     commits: ["GET /search/commits"],
-    issuesAndPullRequests: ["GET /search/issues"],
+    issuesAndPullRequests: [
+      "GET /search/issues",
+      {},
+      {
+        deprecated: "octokit.rest.search.issuesAndPullRequests() is deprecated, see https://docs.github.com/rest/search/search#search-issues-and-pull-requests"
+      }
+    ],
     labels: ["GET /search/labels"],
     repos: ["GET /search/repositories"],
     topics: ["GET /search/topics"],
@@ -30229,14 +30279,8 @@ const Endpoints = {
     addOrUpdateMembershipForUserInOrg: [
       "PUT /orgs/{org}/teams/{team_slug}/memberships/{username}"
     ],
-    addOrUpdateProjectPermissionsInOrg: [
-      "PUT /orgs/{org}/teams/{team_slug}/projects/{project_id}"
-    ],
     addOrUpdateRepoPermissionsInOrg: [
       "PUT /orgs/{org}/teams/{team_slug}/repos/{owner}/{repo}"
-    ],
-    checkPermissionsForProjectInOrg: [
-      "GET /orgs/{org}/teams/{team_slug}/projects/{project_id}"
     ],
     checkPermissionsForRepoInOrg: [
       "GET /orgs/{org}/teams/{team_slug}/repos/{owner}/{repo}"
@@ -30274,13 +30318,9 @@ const Endpoints = {
     listPendingInvitationsInOrg: [
       "GET /orgs/{org}/teams/{team_slug}/invitations"
     ],
-    listProjectsInOrg: ["GET /orgs/{org}/teams/{team_slug}/projects"],
     listReposInOrg: ["GET /orgs/{org}/teams/{team_slug}/repos"],
     removeMembershipForUserInOrg: [
       "DELETE /orgs/{org}/teams/{team_slug}/memberships/{username}"
-    ],
-    removeProjectInOrg: [
-      "DELETE /orgs/{org}/teams/{team_slug}/projects/{project_id}"
     ],
     removeRepoInOrg: [
       "DELETE /orgs/{org}/teams/{team_slug}/repos/{owner}/{repo}"
@@ -30553,7 +30593,7 @@ function legacyRestEndpointMethods(octokit) {
 }
 legacyRestEndpointMethods.VERSION = VERSION$1;
 
-const VERSION = "21.1.1";
+const VERSION = "22.0.0";
 
 const Octokit = Octokit$1.plugin(requestLog, legacyRestEndpointMethods, paginateRest).defaults(
   {
@@ -30655,4 +30695,3 @@ async function run() {
 
 /* istanbul ignore next */
 run();
-//# sourceMappingURL=index.js.map
