@@ -78,6 +78,7 @@ jobs:
 | `labels`       | `label1`                                                                        | **Line-separated** label list  |
 | `issue_number` | `${{ github.event.issue.number }}` or `${{ github.event.pull_request.number }}` | The issue or PR numer          |
 | `repository`   | `${{ github.repository }}`                                                      | The repository (`owner/repo`)  |
+| `api_url`      | `${{ github.api_url }}`                                                         | The GitHub API URL to use      |
 
 > [!WARNING]
 >
