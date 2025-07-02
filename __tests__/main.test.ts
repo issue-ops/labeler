@@ -73,12 +73,14 @@ describe('Input Validation', () => {
     await main.run()
 
     expect(core.getInput).toHaveBeenCalledWith('api_url', { required: false })
-    expect(core.info).toHaveBeenCalledWith('  - API URL: https://api.github.com')
+    expect(core.info).toHaveBeenCalledWith(
+      '  - API URL: https://api.github.com'
+    )
   })
 
   it('Uses custom API URL when provided', async () => {
     const customApiUrl = 'https://github.enterprise.com/api/v3'
-    
+
     core.getInput
       .mockReturnValueOnce('add') // action
       .mockReturnValueOnce('false') // create
@@ -154,7 +156,7 @@ describe('Add Labels', () => {
   it('Uses custom API URL when provided', async () => {
     // Reset mocks and set up new inputs
     jest.resetAllMocks()
-    
+
     core.getInput
       .mockReturnValueOnce('add') // action
       .mockReturnValueOnce('true') // create
@@ -167,7 +169,9 @@ describe('Add Labels', () => {
     await main.run()
 
     expect(core.getInput).toHaveBeenCalledWith('api_url', { required: false })
-    expect(core.info).toHaveBeenCalledWith('  - API URL: https://github.enterprise.com/api/v3')
+    expect(core.info).toHaveBeenCalledWith(
+      '  - API URL: https://github.enterprise.com/api/v3'
+    )
   })
 
   it('Fails on GitHub API error', async () => {
@@ -214,7 +218,7 @@ describe('Add Labels', () => {
   it('Does not create labels when create is false', async () => {
     // Reset mocks and set up new inputs
     jest.resetAllMocks()
-    
+
     core.getInput
       .mockReturnValueOnce('add') // action
       .mockReturnValueOnce('false') // create
