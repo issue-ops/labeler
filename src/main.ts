@@ -20,7 +20,8 @@ export async function run(): Promise<void> {
     required: true
   })
   const apiUrl: string =
-    core.getInput('api_url', { required: false }) || 'https://api.github.com'
+    core.getInput('api_url', { required: false }) ||
+    `${process.env.GITHUB_API_URL}`
 
   core.info('Running action with the following inputs:')
   core.info(`  - Action: ${action}`)
