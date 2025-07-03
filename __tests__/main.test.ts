@@ -60,82 +60,6 @@ describe('Input Validation', () => {
     jest.resetAllMocks()
   })
 
-  it('Uses default API URL when api_url is empty', async () => {
-    // Mock the environment variable
-    const originalGitHubApiUrl = process.env.GITHUB_API_URL
-    process.env.GITHUB_API_URL = 'https://api.github.com'
-
-    core.getInput
-      .mockReturnValueOnce('add') // action
-      .mockReturnValueOnce('false') // create
-      .mockReturnValueOnce('token') // github_token
-      .mockReturnValueOnce(['test'].join('\n')) // labels
-      .mockReturnValueOnce('1') // issue_number
-      .mockReturnValueOnce('issue-ops/labeler') // repository
-      .mockReturnValueOnce('') // api_url (empty)
-
-    await main.run()
-
-    expect(core.getInput).toHaveBeenCalledWith('api_url', { required: false })
-    expect(core.info).toHaveBeenCalledWith(
-      '  - API URL: https://api.github.com'
-    )
-
-    // Restore the original environment variable
-    if (originalGitHubApiUrl !== undefined) {
-      process.env.GITHUB_API_URL = originalGitHubApiUrl
-    } else {
-      delete process.env.GITHUB_API_URL
-    }
-  })
-
-  it('Uses GITHUB_API_URL environment variable when api_url is empty', async () => {
-    // Mock the environment variable to a different value
-    const originalGitHubApiUrl = process.env.GITHUB_API_URL
-    process.env.GITHUB_API_URL = 'https://github.enterprise.internal/api/v3'
-
-    core.getInput
-      .mockReturnValueOnce('add') // action
-      .mockReturnValueOnce('false') // create
-      .mockReturnValueOnce('token') // github_token
-      .mockReturnValueOnce(['test'].join('\n')) // labels
-      .mockReturnValueOnce('1') // issue_number
-      .mockReturnValueOnce('issue-ops/labeler') // repository
-      .mockReturnValueOnce('') // api_url (empty)
-
-    await main.run()
-
-    expect(core.getInput).toHaveBeenCalledWith('api_url', { required: false })
-    expect(core.info).toHaveBeenCalledWith(
-      '  - API URL: https://github.enterprise.internal/api/v3'
-    )
-
-    // Restore the original environment variable
-    if (originalGitHubApiUrl !== undefined) {
-      process.env.GITHUB_API_URL = originalGitHubApiUrl
-    } else {
-      delete process.env.GITHUB_API_URL
-    }
-  })
-
-  it('Uses custom API URL when provided', async () => {
-    const customApiUrl = 'https://github.enterprise.com/api/v3'
-
-    core.getInput
-      .mockReturnValueOnce('add') // action
-      .mockReturnValueOnce('false') // create
-      .mockReturnValueOnce('token') // github_token
-      .mockReturnValueOnce(['test'].join('\n')) // labels
-      .mockReturnValueOnce('1') // issue_number
-      .mockReturnValueOnce('issue-ops/labeler') // repository
-      .mockReturnValueOnce(customApiUrl) // api_url
-
-    await main.run()
-
-    expect(core.getInput).toHaveBeenCalledWith('api_url', { required: false })
-    expect(core.info).toHaveBeenCalledWith(`  - API URL: ${customApiUrl}`)
-  })
-
   it('Handles invalid issue number', async () => {
     core.getInput
       .mockReturnValueOnce('add') // action
@@ -189,7 +113,7 @@ describe('Add Labels', () => {
     expect(core.getInput).toHaveReturnedWith('1')
     expect(core.getInput).toHaveBeenCalledWith('repository', { required: true })
     expect(core.getInput).toHaveReturnedWith('issue-ops/labeler')
-    expect(core.getInput).toHaveBeenCalledWith('api_url', { required: false })
+    expect(core.getInput).toHaveBeenCalledWith('api_url', { required: true })
     expect(core.getInput).toHaveReturnedWith('')
   })
 
@@ -208,7 +132,7 @@ describe('Add Labels', () => {
 
     await main.run()
 
-    expect(core.getInput).toHaveBeenCalledWith('api_url', { required: false })
+    expect(core.getInput).toHaveBeenCalledWith('api_url', { required: true })
     expect(core.info).toHaveBeenCalledWith(
       '  - API URL: https://github.enterprise.com/api/v3'
     )
