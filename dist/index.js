@@ -30616,7 +30616,8 @@ async function run() {
     const repository = coreExports.getInput('repository', {
         required: true
     });
-    const apiUrl = coreExports.getInput('api_url', { required: false }) || 'https://api.github.com';
+    const apiUrl = coreExports.getInput('api_url', { required: false }) ||
+        `${process.env.GITHUB_API_URL}`;
     coreExports.info('Running action with the following inputs:');
     coreExports.info(`  - Action: ${action}`);
     coreExports.info(`  - Create: ${create}`);
