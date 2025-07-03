@@ -34,6 +34,7 @@ inputs:
   api_url:
     description: The GitHub API URL to use
     required: false
+    default: ${{ github.api_url }}
 
 runs:
   using: node20
