@@ -19,6 +19,9 @@ export async function run(): Promise<void> {
   const repository: string = core.getInput('repository', {
     required: true
   })
+  const apiUrl: string =
+    core.getInput('api_url', { required: false }) ||
+    `${process.env.GITHUB_API_URL}`
 
   core.info('Running action with the following inputs:')
   core.info(`  - Action: ${action}`)
@@ -26,6 +29,7 @@ export async function run(): Promise<void> {
   core.info(`  - Issue Number: ${issueNumber}`)
   core.info(`  - Labels: ${labels.join(', ')}`)
   core.info(`  - Repository: ${repository}`)
+  core.info(`  - API URL: ${apiUrl}`)
 
   // Verify action is `add` or `remove`
   if (!['add', 'remove'].includes(action))
@@ -35,7 +39,7 @@ export async function run(): Promise<void> {
   const repo: string = repository.split('/')[1]
 
   // Create the Octokit client
-  const github: Octokit = new Octokit({ auth: githubToken })
+  const github: Octokit = new Octokit({ auth: githubToken, baseUrl: apiUrl })
 
   if (action === 'add') {
     const missingLabels: string[] = []

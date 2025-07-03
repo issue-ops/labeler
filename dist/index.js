@@ -30616,19 +30616,22 @@ async function run() {
     const repository = coreExports.getInput('repository', {
         required: true
     });
+    const apiUrl = coreExports.getInput('api_url', { required: false }) ||
+        `${process.env.GITHUB_API_URL}`;
     coreExports.info('Running action with the following inputs:');
     coreExports.info(`  - Action: ${action}`);
     coreExports.info(`  - Create: ${create}`);
     coreExports.info(`  - Issue Number: ${issueNumber}`);
     coreExports.info(`  - Labels: ${labels.join(', ')}`);
     coreExports.info(`  - Repository: ${repository}`);
+    coreExports.info(`  - API URL: ${apiUrl}`);
     // Verify action is `add` or `remove`
     if (!['add', 'remove'].includes(action))
         return coreExports.setFailed(`Invalid action: ${action}`);
     const owner = repository.split('/')[0];
     const repo = repository.split('/')[1];
     // Create the Octokit client
-    const github = new Octokit({ auth: githubToken });
+    const github = new Octokit({ auth: githubToken, baseUrl: apiUrl });
     if (action === 'add') {
         const missingLabels = [];
         // Check if labels exist

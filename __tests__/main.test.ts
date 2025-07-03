@@ -31,6 +31,7 @@ describe('Invalid Usage', () => {
       .mockReturnValueOnce([].join('\n')) // labels
       .mockReturnValueOnce('MyAwesomeIssue') // issue_number
       .mockReturnValueOnce('issue-ops/invalid-repo') // repository
+      .mockReturnValueOnce('') // api_url
   })
 
   afterEach(() => {
@@ -45,11 +46,110 @@ describe('Invalid Usage', () => {
       .mockReturnValueOnce([].join('\n')) // labels
       .mockReturnValueOnce('MyAwesomeIssue') // issue_number
       .mockReturnValueOnce('issue-ops/invalid-repo') // repository
+      .mockReturnValueOnce('') // api_url
 
     await main.run()
 
     expect(core.getInput).toHaveBeenCalledWith('action', { required: true })
     expect(core.setFailed).toHaveBeenCalledWith('Invalid action: noop')
+  })
+})
+
+describe('Input Validation', () => {
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('Uses default API URL when api_url is empty', async () => {
+    // Mock the environment variable
+    const originalGitHubApiUrl = process.env.GITHUB_API_URL
+    process.env.GITHUB_API_URL = 'https://api.github.com'
+
+    core.getInput
+      .mockReturnValueOnce('add') // action
+      .mockReturnValueOnce('false') // create
+      .mockReturnValueOnce('token') // github_token
+      .mockReturnValueOnce(['test'].join('\n')) // labels
+      .mockReturnValueOnce('1') // issue_number
+      .mockReturnValueOnce('issue-ops/labeler') // repository
+      .mockReturnValueOnce('') // api_url (empty)
+
+    await main.run()
+
+    expect(core.getInput).toHaveBeenCalledWith('api_url', { required: false })
+    expect(core.info).toHaveBeenCalledWith(
+      '  - API URL: https://api.github.com'
+    )
+
+    // Restore the original environment variable
+    if (originalGitHubApiUrl !== undefined) {
+      process.env.GITHUB_API_URL = originalGitHubApiUrl
+    } else {
+      delete process.env.GITHUB_API_URL
+    }
+  })
+
+  it('Uses GITHUB_API_URL environment variable when api_url is empty', async () => {
+    // Mock the environment variable to a different value
+    const originalGitHubApiUrl = process.env.GITHUB_API_URL
+    process.env.GITHUB_API_URL = 'https://github.enterprise.internal/api/v3'
+
+    core.getInput
+      .mockReturnValueOnce('add') // action
+      .mockReturnValueOnce('false') // create
+      .mockReturnValueOnce('token') // github_token
+      .mockReturnValueOnce(['test'].join('\n')) // labels
+      .mockReturnValueOnce('1') // issue_number
+      .mockReturnValueOnce('issue-ops/labeler') // repository
+      .mockReturnValueOnce('') // api_url (empty)
+
+    await main.run()
+
+    expect(core.getInput).toHaveBeenCalledWith('api_url', { required: false })
+    expect(core.info).toHaveBeenCalledWith(
+      '  - API URL: https://github.enterprise.internal/api/v3'
+    )
+
+    // Restore the original environment variable
+    if (originalGitHubApiUrl !== undefined) {
+      process.env.GITHUB_API_URL = originalGitHubApiUrl
+    } else {
+      delete process.env.GITHUB_API_URL
+    }
+  })
+
+  it('Uses custom API URL when provided', async () => {
+    const customApiUrl = 'https://github.enterprise.com/api/v3'
+
+    core.getInput
+      .mockReturnValueOnce('add') // action
+      .mockReturnValueOnce('false') // create
+      .mockReturnValueOnce('token') // github_token
+      .mockReturnValueOnce(['test'].join('\n')) // labels
+      .mockReturnValueOnce('1') // issue_number
+      .mockReturnValueOnce('issue-ops/labeler') // repository
+      .mockReturnValueOnce(customApiUrl) // api_url
+
+    await main.run()
+
+    expect(core.getInput).toHaveBeenCalledWith('api_url', { required: false })
+    expect(core.info).toHaveBeenCalledWith(`  - API URL: ${customApiUrl}`)
+  })
+
+  it('Handles invalid issue number', async () => {
+    core.getInput
+      .mockReturnValueOnce('add') // action
+      .mockReturnValueOnce('false') // create
+      .mockReturnValueOnce('token') // github_token
+      .mockReturnValueOnce(['test'].join('\n')) // labels
+      .mockReturnValueOnce('not-a-number') // issue_number
+      .mockReturnValueOnce('issue-ops/labeler') // repository
+      .mockReturnValueOnce('') // api_url
+
+    await main.run()
+
+    // The parseInt will result in NaN, which should still be handled
+    expect(core.info).toHaveBeenCalledWith('  - Issue Number: NaN')
   })
 })
 
@@ -63,6 +163,7 @@ describe('Add Labels', () => {
       .mockReturnValueOnce(['bug', 'enhancement'].join('\n')) // labels
       .mockReturnValueOnce('1') // issue_number
       .mockReturnValueOnce('issue-ops/labeler') // repository
+      .mockReturnValueOnce('') // api_url
   })
 
   afterEach(() => {
@@ -88,6 +189,29 @@ describe('Add Labels', () => {
     expect(core.getInput).toHaveReturnedWith('1')
     expect(core.getInput).toHaveBeenCalledWith('repository', { required: true })
     expect(core.getInput).toHaveReturnedWith('issue-ops/labeler')
+    expect(core.getInput).toHaveBeenCalledWith('api_url', { required: false })
+    expect(core.getInput).toHaveReturnedWith('')
+  })
+
+  it('Uses custom API URL when provided', async () => {
+    // Reset mocks and set up new inputs
+    jest.resetAllMocks()
+
+    core.getInput
+      .mockReturnValueOnce('add') // action
+      .mockReturnValueOnce('true') // create
+      .mockReturnValueOnce('token') // github_token
+      .mockReturnValueOnce(['bug'].join('\n')) // labels
+      .mockReturnValueOnce('1') // issue_number
+      .mockReturnValueOnce('issue-ops/labeler') // repository
+      .mockReturnValueOnce('https://github.enterprise.com/api/v3') // api_url
+
+    await main.run()
+
+    expect(core.getInput).toHaveBeenCalledWith('api_url', { required: false })
+    expect(core.info).toHaveBeenCalledWith(
+      '  - API URL: https://github.enterprise.com/api/v3'
+    )
   })
 
   it('Fails on GitHub API error', async () => {
@@ -130,6 +254,35 @@ describe('Add Labels', () => {
       repo: 'labeler'
     })
   })
+
+  it('Does not create labels when create is false', async () => {
+    // Reset mocks and set up new inputs
+    jest.resetAllMocks()
+
+    core.getInput
+      .mockReturnValueOnce('add') // action
+      .mockReturnValueOnce('false') // create
+      .mockReturnValueOnce('token') // github_token
+      .mockReturnValueOnce(['nonexistent-label'].join('\n')) // labels
+      .mockReturnValueOnce('1') // issue_number
+      .mockReturnValueOnce('issue-ops/labeler') // repository
+      .mockReturnValueOnce('') // api_url
+
+    mocktokit.rest.issues.getLabel.mockRejectedValue({
+      status: 404,
+      message: 'Not found'
+    })
+
+    await main.run()
+
+    expect(mocktokit.rest.issues.createLabel).not.toHaveBeenCalled()
+    expect(mocktokit.rest.issues.addLabels).toHaveBeenCalledWith({
+      issue_number: 1,
+      labels: ['nonexistent-label'],
+      owner: 'issue-ops',
+      repo: 'labeler'
+    })
+  })
 })
 
 describe('Remove Labels', () => {
@@ -142,6 +295,7 @@ describe('Remove Labels', () => {
       .mockReturnValueOnce(['bug', 'enhancement'].join('\n')) // labels
       .mockReturnValueOnce('1') // issue_number
       .mockReturnValueOnce('issue-ops/labeler') // repository
+      .mockReturnValueOnce('') // api_url
   })
 
   afterEach(() => {
