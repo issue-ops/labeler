@@ -11,6 +11,10 @@ inputs:
     description: The action to take
     required: false
     default: add
+  api_url:
+    description: The GitHub API URL to use
+    required: false
+    default: ${{ github.api_url }}
   create:
     description: Create the label(s) if not present
     required: false
@@ -31,10 +35,6 @@ inputs:
     description: The repository to use
     required: false
     default: ${{ github.repository }}
-  api_url:
-    description: The GitHub API URL to use
-    required: false
-    default: ${{ github.api_url }}
 
 runs:
   using: node20

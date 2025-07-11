@@ -26,12 +26,12 @@ describe('Invalid Usage', () => {
     // Set the action's inputs as return values from core.getInput()
     core.getInput
       .mockReturnValueOnce('noop') // action
+      .mockReturnValueOnce('') // api_url
       .mockReturnValueOnce('nahhhh') // create
       .mockReturnValueOnce('token') // github_token
       .mockReturnValueOnce([].join('\n')) // labels
       .mockReturnValueOnce('MyAwesomeIssue') // issue_number
       .mockReturnValueOnce('issue-ops/invalid-repo') // repository
-      .mockReturnValueOnce('') // api_url
   })
 
   afterEach(() => {
@@ -41,12 +41,12 @@ describe('Invalid Usage', () => {
   it('Fails on invalid action input', async () => {
     core.getInput
       .mockReturnValueOnce('noop') // action
+      .mockReturnValueOnce('') // api_url
       .mockReturnValueOnce('nahhhh') // create
       .mockReturnValueOnce('token') // github_token
       .mockReturnValueOnce([].join('\n')) // labels
       .mockReturnValueOnce('MyAwesomeIssue') // issue_number
       .mockReturnValueOnce('issue-ops/invalid-repo') // repository
-      .mockReturnValueOnce('') // api_url
 
     await main.run()
 
@@ -63,12 +63,12 @@ describe('Input Validation', () => {
   it('Handles invalid issue number', async () => {
     core.getInput
       .mockReturnValueOnce('add') // action
+      .mockReturnValueOnce('') // api_url
       .mockReturnValueOnce('false') // create
       .mockReturnValueOnce('token') // github_token
       .mockReturnValueOnce(['test'].join('\n')) // labels
       .mockReturnValueOnce('not-a-number') // issue_number
       .mockReturnValueOnce('issue-ops/labeler') // repository
-      .mockReturnValueOnce('') // api_url
 
     await main.run()
 
@@ -82,12 +82,12 @@ describe('Add Labels', () => {
     // Set the action's inputs as return values from core.getInput()
     core.getInput
       .mockReturnValueOnce('add') // action
+      .mockReturnValueOnce('') // api_url
       .mockReturnValueOnce('true') // create
       .mockReturnValueOnce('token') // github_token
       .mockReturnValueOnce(['bug', 'enhancement'].join('\n')) // labels
       .mockReturnValueOnce('1') // issue_number
       .mockReturnValueOnce('issue-ops/labeler') // repository
-      .mockReturnValueOnce('') // api_url
   })
 
   afterEach(() => {
@@ -123,12 +123,12 @@ describe('Add Labels', () => {
 
     core.getInput
       .mockReturnValueOnce('add') // action
+      .mockReturnValueOnce('https://github.enterprise.com/api/v3') // api_url
       .mockReturnValueOnce('true') // create
       .mockReturnValueOnce('token') // github_token
       .mockReturnValueOnce(['bug'].join('\n')) // labels
       .mockReturnValueOnce('1') // issue_number
       .mockReturnValueOnce('issue-ops/labeler') // repository
-      .mockReturnValueOnce('https://github.enterprise.com/api/v3') // api_url
 
     await main.run()
 
@@ -185,12 +185,12 @@ describe('Add Labels', () => {
 
     core.getInput
       .mockReturnValueOnce('add') // action
+      .mockReturnValueOnce('') // api_url
       .mockReturnValueOnce('false') // create
       .mockReturnValueOnce('token') // github_token
       .mockReturnValueOnce(['nonexistent-label'].join('\n')) // labels
       .mockReturnValueOnce('1') // issue_number
       .mockReturnValueOnce('issue-ops/labeler') // repository
-      .mockReturnValueOnce('') // api_url
 
     mocktokit.rest.issues.getLabel.mockRejectedValue({
       status: 404,
@@ -214,12 +214,12 @@ describe('Remove Labels', () => {
     // Set the action's inputs as return values from core.getInput()
     core.getInput
       .mockReturnValueOnce('remove') // action
+      .mockReturnValueOnce('') // api_url
       .mockReturnValueOnce('true') // create
       .mockReturnValueOnce('token') // github_token
       .mockReturnValueOnce(['bug', 'enhancement'].join('\n')) // labels
       .mockReturnValueOnce('1') // issue_number
       .mockReturnValueOnce('issue-ops/labeler') // repository
-      .mockReturnValueOnce('') // api_url
   })
 
   afterEach(() => {

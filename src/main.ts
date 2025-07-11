@@ -7,6 +7,7 @@ import { Octokit } from '@octokit/rest'
 export async function run(): Promise<void> {
   // Get inputs
   const action: string = core.getInput('action', { required: true })
+  const apiUrl: string = core.getInput('api_url', { required: true })
   const create: boolean = core.getInput('create') === 'true'
   const githubToken: string = core.getInput('github_token', { required: true })
   const labels: string[] = core
@@ -19,15 +20,14 @@ export async function run(): Promise<void> {
   const repository: string = core.getInput('repository', {
     required: true
   })
-  const apiUrl: string = core.getInput('api_url', { required: true })
 
   core.info('Running action with the following inputs:')
   core.info(`  - Action: ${action}`)
+  core.info(`  - API URL: ${apiUrl}`)
   core.info(`  - Create: ${create}`)
   core.info(`  - Issue Number: ${issueNumber}`)
   core.info(`  - Labels: ${labels.join(', ')}`)
   core.info(`  - Repository: ${repository}`)
-  core.info(`  - API URL: ${apiUrl}`)
 
   // Verify action is `add` or `remove`
   if (!['add', 'remove'].includes(action))

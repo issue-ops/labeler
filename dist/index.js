@@ -30607,6 +30607,7 @@ const Octokit = Octokit$1.plugin(requestLog, legacyRestEndpointMethods, paginate
 async function run() {
     // Get inputs
     const action = coreExports.getInput('action', { required: true });
+    const apiUrl = coreExports.getInput('api_url', { required: true });
     const create = coreExports.getInput('create') === 'true';
     const githubToken = coreExports.getInput('github_token', { required: true });
     const labels = coreExports.getInput('labels', { required: true })
@@ -30616,14 +30617,13 @@ async function run() {
     const repository = coreExports.getInput('repository', {
         required: true
     });
-    const apiUrl = coreExports.getInput('api_url', { required: true });
     coreExports.info('Running action with the following inputs:');
     coreExports.info(`  - Action: ${action}`);
+    coreExports.info(`  - API URL: ${apiUrl}`);
     coreExports.info(`  - Create: ${create}`);
     coreExports.info(`  - Issue Number: ${issueNumber}`);
     coreExports.info(`  - Labels: ${labels.join(', ')}`);
     coreExports.info(`  - Repository: ${repository}`);
-    coreExports.info(`  - API URL: ${apiUrl}`);
     // Verify action is `add` or `remove`
     if (!['add', 'remove'].includes(action))
         return coreExports.setFailed(`Invalid action: ${action}`);
