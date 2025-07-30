@@ -30610,8 +30610,9 @@ async function run() {
     const apiUrl = coreExports.getInput('api_url', { required: true });
     const create = coreExports.getInput('create') === 'true';
     const githubToken = coreExports.getInput('github_token', { required: true });
-    const labels = coreExports.getInput('labels', { required: true })
-        .trim()
+    const labels = coreExports.getInput('labels', { required: false, trimWhitespace: true })
+        .split('\n');
+    const labelPatterns = coreExports.getInput('label_patterns', { required: false, trimWhitespace: true })
         .split('\n');
     const issueNumber = parseInt(coreExports.getInput('issue_number', { required: true }));
     const repository = coreExports.getInput('repository', {
@@ -30623,10 +30624,25 @@ async function run() {
     coreExports.info(`  - Create: ${create}`);
     coreExports.info(`  - Issue Number: ${issueNumber}`);
     coreExports.info(`  - Labels: ${labels.join(', ')}`);
+    coreExports.info(`  - Label Patterns: ${labelPatterns.join(', ')}`);
     coreExports.info(`  - Repository: ${repository}`);
     // Verify action is `add` or `remove`
     if (!['add', 'remove'].includes(action))
         return coreExports.setFailed(`Invalid action: ${action}`);
+    // Remove empty labels and patterns since core.getInput will return an empty
+    // string if the input is not provided
+    if (labels.length > 0 && labels[0] === '')
+        labels.pop();
+    if (labelPatterns.length > 0 && labelPatterns[0] === '')
+        labelPatterns.pop();
+    // If action is add, ensure labels are provided
+    if (action === 'add' && labels.length === 0)
+        return coreExports.setFailed('No labels provided for adding');
+    if (action === 'add' && labelPatterns.length > 0)
+        coreExports.warning('The label_patterns input is ignored when action is add');
+    // If action is remove, either labels or label patterns must be provided
+    if (action === 'remove' && labels.length === 0 && labelPatterns.length === 0)
+        return coreExports.setFailed('No labels or label patterns provided for removal');
     const owner = repository.split('/')[0];
     const repo = repository.split('/')[1];
     // Create the Octokit client
@@ -30688,6 +30704,41 @@ async function run() {
                 // Raise error if it's not a 404
                 if (error.status !== 404)
                     return coreExports.setFailed(error.message);
+            }
+        }
+        // Get the existing labels on the issue
+        const { data: issue } = await github.rest.issues.get({
+            issue_number: issueNumber,
+            owner,
+            repo
+        });
+        for (const pattern of labelPatterns) {
+            coreExports.info(`Removing labels matching pattern: ${pattern}`);
+            // Match against existing labels
+            const matchingLabels = issue.labels
+                .map((label) => 
+            /* istanbul ignore next */ typeof label === 'string'
+                ? label
+                : label.name || '')
+                .filter((label) => new RegExp(pattern).test(label));
+            // Remove matching labels
+            for (const label of matchingLabels) {
+                try {
+                    await github.rest.issues.removeLabel({
+                        issue_number: issueNumber,
+                        name: label,
+                        owner,
+                        repo
+                    });
+                    coreExports.info(`Removed label: ${label}`);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                }
+                catch (error) {
+                    // Raise error if it's not a 404
+                    /* istanbul ignore next */
+                    if (error.status !== 404)
+                        return coreExports.setFailed(error.message);
+                }
             }
         }
         coreExports.info(`Removed labels from #${issueNumber}: ${labels.join(', ')}`);
