@@ -56,7 +56,10 @@ describe('Invalid Usage', () => {
 
     await main.run()
 
-    expect(core.getInput).toHaveBeenCalledWith('action', { required: true })
+    expect(core.getInput).toHaveBeenCalledWith('action', {
+      required: true,
+      trimWhitespace: true
+    })
     expect(core.setFailed).toHaveBeenCalledWith('Invalid action: noop')
   })
 })
@@ -107,12 +110,16 @@ describe('Add Labels', () => {
   it('Retrieves valid inputs', async () => {
     await main.run()
 
-    expect(core.getInput).toHaveBeenCalledWith('action', { required: true })
+    expect(core.getInput).toHaveBeenCalledWith('action', {
+      required: true,
+      trimWhitespace: true
+    })
     expect(core.getInput).toHaveReturnedWith('add')
     expect(core.getInput).toHaveBeenCalledWith('create')
     expect(core.getInput).toHaveReturnedWith('true')
     expect(core.getInput).toHaveBeenCalledWith('github_token', {
-      required: true
+      required: true,
+      trimWhitespace: true
     })
     expect(core.getInput).toHaveReturnedWith('token')
     expect(core.getInput).toHaveBeenCalledWith('labels', {
@@ -125,12 +132,19 @@ describe('Add Labels', () => {
     })
     expect(core.getInput).toHaveReturnedWith('bug\nenhancement')
     expect(core.getInput).toHaveBeenCalledWith('issue_number', {
-      required: true
+      required: true,
+      trimWhitespace: true
     })
     expect(core.getInput).toHaveReturnedWith('1')
-    expect(core.getInput).toHaveBeenCalledWith('repository', { required: true })
+    expect(core.getInput).toHaveBeenCalledWith('repository', {
+      required: true,
+      trimWhitespace: true
+    })
     expect(core.getInput).toHaveReturnedWith('issue-ops/labeler')
-    expect(core.getInput).toHaveBeenCalledWith('api_url', { required: true })
+    expect(core.getInput).toHaveBeenCalledWith('api_url', {
+      required: true,
+      trimWhitespace: true
+    })
     expect(core.getInput).toHaveReturnedWith('')
   })
 
@@ -151,7 +165,10 @@ describe('Add Labels', () => {
 
     await main.run()
 
-    expect(core.getInput).toHaveBeenCalledWith('api_url', { required: true })
+    expect(core.getInput).toHaveBeenCalledWith('api_url', {
+      required: true,
+      trimWhitespace: true
+    })
     expect(core.info).toHaveBeenCalledWith(
       '  - API URL: https://github.enterprise.com/api/v3'
     )
@@ -349,7 +366,7 @@ describe('Remove Labels', () => {
       .mockReturnValueOnce('nahhhh') // create
       .mockReturnValueOnce('token') // github_token
       .mockReturnValueOnce([].join('\n')) // labels
-      .mockReturnValueOnce(['example:.*'].join('\n')) // label_patterns
+      .mockReturnValueOnce(['example:*'].join('\n')) // label_patterns
       .mockReturnValueOnce('1') // issue_number
       .mockReturnValueOnce('issue-ops/labeler') // repository
 

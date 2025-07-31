@@ -1,26 +1,37 @@
 import * as core from '@actions/core'
 import { Octokit } from '@octokit/rest'
+import { minimatch } from 'minimatch'
 
 /**
  * The entrypoint for the action
  */
 export async function run(): Promise<void> {
   // Get inputs
-  const action: string = core.getInput('action', { required: true })
-  const apiUrl: string = core.getInput('api_url', { required: true })
-  const create: boolean = core.getInput('create') === 'true'
-  const githubToken: string = core.getInput('github_token', { required: true })
+  const action: string = core
+    .getInput('action', { required: true, trimWhitespace: true })
+    .toLowerCase()
+  const apiUrl: string = core
+    .getInput('api_url', { required: true, trimWhitespace: true })
+    .toLowerCase()
+  const create: boolean = core.getInput('create').toLowerCase() === 'true'
+  const githubToken: string = core.getInput('github_token', {
+    required: true,
+    trimWhitespace: true
+  })
   const labels: string[] = core
     .getInput('labels', { required: false, trimWhitespace: true })
     .split('\n')
+    .filter((label) => label !== '')
   const labelPatterns: string[] = core
     .getInput('label_patterns', { required: false, trimWhitespace: true })
     .split('\n')
+    .filter((label) => label !== '')
   const issueNumber: number = parseInt(
-    core.getInput('issue_number', { required: true })
+    core.getInput('issue_number', { required: true, trimWhitespace: true })
   )
   const repository: string = core.getInput('repository', {
-    required: true
+    required: true,
+    trimWhitespace: true
   })
 
   core.info('Running action with the following inputs:')
@@ -35,11 +46,6 @@ export async function run(): Promise<void> {
   // Verify action is `add` or `remove`
   if (!['add', 'remove'].includes(action))
     return core.setFailed(`Invalid action: ${action}`)
-
-  // Remove empty labels and patterns since core.getInput will return an empty
-  // string if the input is not provided
-  if (labels.length > 0 && labels[0] === '') labels.pop()
-  if (labelPatterns.length > 0 && labelPatterns[0] === '') labelPatterns.pop()
 
   // If action is add, ensure labels are provided
   if (action === 'add' && labels.length === 0)
@@ -135,7 +141,7 @@ export async function run(): Promise<void> {
             ? label
             : label.name || ''
         )
-        .filter((label) => new RegExp(pattern).test(label))
+        .filter((label) => minimatch(label, pattern))
 
       // Remove matching labels
       for (const label of matchingLabels) {
