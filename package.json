@@ -30,6 +30,7 @@
     "format:write": "npx prettier --write .",
     "format:check": "npx prettier --check .",
     "lint": "npx eslint .",
+    "local-action": "npx @github/local-action . src/main.ts .env",
     "package": "npx rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
     "test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx jest",
     "all": "npm run format:write && npm run lint && npm run test && npm run coverage && npm run package"
@@ -42,10 +43,12 @@
   "dependencies": {
     "@actions/core": "^1.11.1",
     "@actions/github": "^6.0.1",
-    "@octokit/rest": "^22.0.0"
+    "@octokit/rest": "^22.0.0",
+    "minimatch": "^10.0.3"
   },
   "devDependencies": {
     "@eslint/compat": "^1.3.1",
+    "@github/local-action": "^5.1.0",
     "@octokit/openapi-types": "^25.1.0",
     "@octokit/types": "^14.1.0",
     "@rollup/plugin-commonjs": "^28.0.6",
