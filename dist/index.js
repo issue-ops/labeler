@@ -32636,8 +32636,10 @@ async function run() {
     // Get inputs
     const action = coreExports.getInput('action', { required: true, trimWhitespace: true })
         .toLowerCase();
-    const apiUrl = coreExports.getInput('api_url', { required: true, trimWhitespace: true })
-        .toLowerCase();
+    const apiUrl = coreExports.getInput('api_url', {
+        required: true,
+        trimWhitespace: true
+    });
     const create = coreExports.getInput('create').toLowerCase() === 'true';
     const githubToken = coreExports.getInput('github_token', {
         required: true,
@@ -32771,7 +32773,7 @@ async function run() {
                 }
             }
         }
-        coreExports.info(`Removed labels from #${issueNumber}: ${labels.join(', ')}`);
+        coreExports.info(`Removed labels from #${issueNumber}`);
     }
     coreExports.info('Done!');
 }

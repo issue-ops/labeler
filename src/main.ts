@@ -10,9 +10,10 @@ export async function run(): Promise<void> {
   const action: string = core
     .getInput('action', { required: true, trimWhitespace: true })
     .toLowerCase()
-  const apiUrl: string = core
-    .getInput('api_url', { required: true, trimWhitespace: true })
-    .toLowerCase()
+  const apiUrl: string = core.getInput('api_url', {
+    required: true,
+    trimWhitespace: true
+  })
   const create: boolean = core.getInput('create').toLowerCase() === 'true'
   const githubToken: string = core.getInput('github_token', {
     required: true,
@@ -162,7 +163,7 @@ export async function run(): Promise<void> {
       }
     }
 
-    core.info(`Removed labels from #${issueNumber}: ${labels.join(', ')}`)
+    core.info(`Removed labels from #${issueNumber}`)
   }
 
   core.info('Done!')
