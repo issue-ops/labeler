@@ -56,9 +56,13 @@ jobs:
         with:
           action: remove
           issue_number: ${{ github.event.issue.number }}
+          # Remove these specific labels
           labels: |
             enhancement
             great-first-issue
+          # Remove labels that match these glob patterns
+          label_patterns: |
+            issue-ops-step:*
 ```
 
 ## Behavior
@@ -67,18 +71,28 @@ jobs:
   set to `'false'` (the default), this action will fail.
 - When removing labels that do not exist, this action will continue without
   error.
+- When removing labels, if you specify a `label_patterns` list, it will match
+  against the existing labels on the issue or PR. If a label matches any of the
+  glob patterns, it will be removed. If no labels match the patterns, no labels
+  will be removed.
+- The `labels` and `label_patterns` inputs are not mutually exclusive. If both
+  are specified, the action will remove labels that match the patterns and also
+  remove any labels specified in the `labels` input, regardless of whether they
+  match the patterns.
 
 ## Inputs
 
-| Input          | Default                                                                         | Description                    |
-| -------------- | ------------------------------------------------------------------------------- | ------------------------------ |
-| `action`       | `add`                                                                           | The action (`add` or `remove`) |
-| `create`       | `'false'`                                                                       | Create label, if not present   |
-| `github_token` | `${{ github.token }}`                                                           | The GitHub API token to use    |
-| `labels`       | `label1`                                                                        | **Line-separated** label list  |
-| `issue_number` | `${{ github.event.issue.number }}` or `${{ github.event.pull_request.number }}` | The issue or PR numer          |
-| `repository`   | `${{ github.repository }}`                                                      | The repository (`owner/repo`)  |
-| `api_url`      | `${{ github.api_url }}`                                                         | The GitHub API URL to use      |
+| Input            | Default                                   | Description                                                                |
+| ---------------- | ----------------------------------------- | -------------------------------------------------------------------------- |
+| `action`         | `add`                                     | The action (`add` or `remove`)                                             |
+| `create`         | `'false'`                                 | Create label, if not present                                               |
+| `github_token`   | `${{ github.token }}`                     | The GitHub API token to use                                                |
+| `labels`         | `label1`                                  | **Line-separated** label list                                              |
+| `label_patterns` | None                                      | **Line-separated** list of glob patterns to match when **removing** labels |
+| `issue_number`   | `${{ github.event.issue.number }}`        | The issue or PR number                                                     |
+|                  | `${{ github.event.pull_request.number }}` |                                                                            |
+| `repository`     | `${{ github.repository }}`                | The repository (`owner/repo`)                                              |
+| `api_url`        | `${{ github.api_url }}`                   | The GitHub API URL to use                                                  |
 
 > [!WARNING]
 >

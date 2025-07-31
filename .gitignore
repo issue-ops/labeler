@@ -21,3 +21,4 @@ Thumbs.db
 # Extra
 tmp/
 linter/
+.env

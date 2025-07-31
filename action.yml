@@ -25,7 +25,10 @@ inputs:
     default: ${{ github.token }}
   labels:
     description: A line-separated list of labels to add or remove
-    required: true
+    required: false
+  label_patterns:
+    description: A line-separated list of patterns to match when removing labels
+    required: false
   issue_number:
     description: The issue or PR number
     required: true

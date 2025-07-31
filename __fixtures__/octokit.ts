@@ -6,6 +6,7 @@ export const rest = {
   issues: {
     addLabels: jest.fn(),
     createLabel: jest.fn(),
+    get: jest.fn(),
     getLabel: jest.fn(),
     removeLabel: jest.fn()
   }
