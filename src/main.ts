@@ -125,40 +125,42 @@ export async function run(): Promise<void> {
       }
     }
 
-    // Get the existing labels on the issue
-    const { data: issue } = await github.rest.issues.get({
-      issue_number: issueNumber,
-      owner,
-      repo
-    })
+    if (labelPatterns.length !== 0) {
+      // Get the existing labels on the issue
+      const { data: issue } = await github.rest.issues.get({
+        issue_number: issueNumber,
+        owner,
+        repo
+      })
 
-    for (const pattern of labelPatterns) {
-      core.info(`Removing labels matching pattern: ${pattern}`)
+      for (const pattern of labelPatterns) {
+        core.info(`Removing labels matching pattern: ${pattern}`)
 
-      // Match against existing labels
-      const matchingLabels = issue.labels
-        .map((label) =>
-          /* istanbul ignore next */ typeof label === 'string'
-            ? label
-            : label.name || ''
-        )
-        .filter((label) => minimatch(label, pattern))
+        // Match against existing labels
+        const matchingLabels = issue.labels
+          .map((label) =>
+            /* istanbul ignore next */ typeof label === 'string'
+              ? label
+              : label.name || ''
+          )
+          .filter((label) => label !== '' && minimatch(label, pattern))
 
-      // Remove matching labels
-      for (const label of matchingLabels) {
-        try {
-          await github.rest.issues.removeLabel({
-            issue_number: issueNumber,
-            name: label,
-            owner,
-            repo
-          })
-          core.info(`Removed label: ${label}`)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: any) {
-          // Raise error if it's not a 404
-          /* istanbul ignore next */
-          if (error.status !== 404) return core.setFailed(error.message)
+        // Remove matching labels
+        for (const label of matchingLabels) {
+          try {
+            await github.rest.issues.removeLabel({
+              issue_number: issueNumber,
+              name: label,
+              owner,
+              repo
+            })
+            core.info(`Removed label: ${label}`)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } catch (error: any) {
+            // Raise error if it's not a 404
+            /* istanbul ignore next */
+            if (error.status !== 404) return core.setFailed(error.message)
+          }
         }
       }
     }
