@@ -50,7 +50,7 @@
     "@eslint/compat": "^1.4.1",
     "@github/local-action": "^6.0.2",
     "@octokit/openapi-types": "^26.0.0",
-    "@octokit/types": "^15.0.0",
+    "@octokit/types": "^16.0.0",
     "@rollup/plugin-commonjs": "^28.0.6",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-typescript": "^12.3.0",
