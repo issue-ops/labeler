@@ -41,7 +41,7 @@
     "outputName": "jest-junit.xml"
   },
   "dependencies": {
-    "@actions/core": "^3.0.0",
+    "@actions/core": "^3.0.1",
     "@actions/github": "^9.0.0",
     "@octokit/rest": "^22.0.1",
     "minimatch": "^10.2.5"
